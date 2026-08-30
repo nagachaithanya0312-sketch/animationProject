@@ -1,0 +1,1879 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Lord Venkateswara - Divine Pixel Formation</title>
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+}
+
+body {
+    position: relative;
+}
+
+canvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+}
+
+/* ==========================================
+   PARTICLE CANVAS
+========================================== */
+
+#canvas {
+    z-index: 1;
+    background: #000;
+}
+
+/* ==========================================
+   FINAL IMAGE
+========================================== */
+
+#finalImage {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 100vw;
+    height: 100vh;
+
+    object-fit: contain;
+
+    opacity: 0;
+
+    z-index: 5;
+    pointer-events: none;
+
+    transition: opacity 2.5s ease;
+}
+
+#finalImage.show {
+    opacity: 1;
+}
+
+/* ==========================================
+   FLOWER GARLAND CANVAS
+========================================== */
+
+#garlandCanvas {
+    position: fixed;
+    inset: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    pointer-events: none;
+
+    z-index: 10;
+}
+
+/* ==========================================
+   START BUTTON
+========================================== */
+
+#startButton {
+    position: fixed;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+
+    padding: 17px 42px;
+
+    border: 1px solid rgba(255, 215, 120, 0.8);
+
+    border-radius: 50px;
+
+    background: rgba(15, 8, 0, 0.9);
+
+    color: #ffd76a;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 18px;
+
+    letter-spacing: 2px;
+
+    cursor: pointer;
+
+    z-index: 20;
+
+    backdrop-filter: blur(10px);
+
+    transition: 0.3s ease;
+}
+
+#startButton:hover {
+    transform:
+        translate(-50%, -50%)
+        scale(1.06);
+
+    background:
+        rgba(255, 180, 50, 0.15);
+
+    box-shadow:
+        0 0 35px
+        rgba(255, 190, 60, 0.45);
+}
+
+/* ==========================================
+   LOADING
+========================================== */
+
+#loading {
+    position: fixed;
+
+    left: 50%;
+    top: calc(50% + 72px);
+
+    transform: translateX(-50%);
+
+    color: #ffd76a;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 13px;
+
+    letter-spacing: 2px;
+
+    display: none;
+
+    z-index: 20;
+}
+
+</style>
+</head>
+
+
+<body>
+
+<!-- ==========================================
+     MAIN PARTICLE CANVAS
+========================================== -->
+
+<canvas id="canvas"></canvas>
+
+
+<!-- ==========================================
+     ORIGINAL HIGH RES IMAGE
+========================================== -->
+
+<img
+    id="finalImage"
+    src="Lord venkateswara.jpg"
+    alt="Lord Venkateswara"
+>
+
+
+<!-- ==========================================
+     FLOWER GARLAND CANVAS
+========================================== -->
+
+<canvas id="garlandCanvas"></canvas>
+
+
+<!-- ==========================================
+     BACKGROUND MUSIC
+========================================== -->
+
+<audio
+    id="bgMusic"
+    loop
+    preload="auto"
+>
+    <source
+        src="venkateswara.mp3"
+        type="audio/mpeg"
+    >
+
+    Your browser does not support the audio element.
+</audio>
+
+
+<!-- ==========================================
+     START BUTTON
+========================================== -->
+
+<button id="startButton">
+     🙏 <em>OM NAMO VENKATESAYA</em> 🙏
+</button>
+
+
+<!-- ==========================================
+     LOADING
+========================================== -->
+
+<div id="loading">
+    PREPARING DIVINE PIXELS...
+</div>
+
+
+<script>
+
+/* =========================================================
+   MAIN PARTICLE SYSTEM
+========================================================= */
+
+const canvas =
+    document.getElementById("canvas");
+
+const ctx =
+    canvas.getContext("2d", {
+        alpha: false
+    });
+
+
+/* =========================================================
+   UI
+========================================================= */
+
+const startButton =
+    document.getElementById("startButton");
+
+const loading =
+    document.getElementById("loading");
+
+const finalImage =
+    document.getElementById("finalImage");
+
+
+/* =========================================================
+   BACKGROUND MUSIC
+========================================================= */
+
+const bgMusic =
+    document.getElementById("bgMusic");
+
+bgMusic.volume = 0.7;
+
+
+/* =========================================================
+   IMAGE
+========================================================= */
+
+const image =
+    new Image();
+
+image.src =
+    "Lord venkateswara.jpg";
+
+let imageReady =
+    false;
+
+
+image.onload = () => {
+
+    imageReady = true;
+
+    console.log(
+        "Lord Venkateswara image loaded."
+    );
+
+};
+
+
+image.onerror = () => {
+
+    alert(
+        "Image not found!\n\n" +
+        "Make sure this file exists:\n\n" +
+        "Lord venkateswara.jpg"
+    );
+
+};
+
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+const BASE_DOT_GAP = 5;
+
+const MAX_PARTICLES = 25000;
+
+const FORMATION_TIME = 5;
+
+const MAX_DELAY = 1.2;
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let particles = [];
+
+let animationStarted = false;
+
+let animationStartTime = 0;
+
+let finalImageShown = false;
+
+let canvasDpr = 1;
+
+
+/* =========================================================
+   RESIZE MAIN CANVAS
+========================================================= */
+
+function resizeCanvas() {
+
+    canvasDpr =
+        Math.min(
+            window.devicePixelRatio || 1,
+            1.25
+        );
+
+
+    canvas.width =
+        Math.floor(
+            window.innerWidth *
+            canvasDpr
+        );
+
+
+    canvas.height =
+        Math.floor(
+            window.innerHeight *
+            canvasDpr
+        );
+
+
+    canvas.style.width =
+        window.innerWidth + "px";
+
+
+    canvas.style.height =
+        window.innerHeight + "px";
+
+
+    ctx.setTransform(
+        canvasDpr,
+        0,
+        0,
+        canvasDpr,
+        0,
+        0
+    );
+
+
+    ctx.imageSmoothingEnabled =
+        false;
+}
+
+
+resizeCanvas();
+
+
+/* =========================================================
+   PARTICLE CLASS
+========================================================= */
+
+class Particle {
+
+    constructor(
+        targetX,
+        targetY,
+        r,
+        g,
+        b
+    ) {
+
+        this.targetX =
+            targetX;
+
+        this.targetY =
+            targetY;
+
+
+        const angle =
+            Math.random() *
+            Math.PI *
+            2;
+
+
+        const distance =
+            350 +
+            Math.random() *
+            1000;
+
+
+        this.startX =
+            window.innerWidth / 2 +
+            Math.cos(angle) *
+            distance;
+
+
+        this.startY =
+            window.innerHeight / 2 +
+            Math.sin(angle) *
+            distance;
+
+
+        this.x =
+            this.startX;
+
+
+        this.y =
+            this.startY;
+
+
+        this.color =
+            `rgb(${r},${g},${b})`;
+
+
+        this.size =
+            1.2 +
+            Math.random() *
+            0.8;
+
+
+        this.delay =
+            Math.random() *
+            MAX_DELAY;
+
+
+        this.phase =
+            Math.random() *
+            Math.PI *
+            2;
+
+
+        this.orbit =
+            10 +
+            Math.random() *
+            35;
+
+
+        this.direction =
+            Math.random() > 0.5
+                ? 1
+                : -1;
+    }
+
+
+    update(elapsed) {
+
+        let progress =
+            (
+                elapsed -
+                this.delay
+            ) /
+            FORMATION_TIME;
+
+
+        if (progress <= 0) {
+            return;
+        }
+
+
+        if (progress > 1) {
+            progress = 1;
+        }
+
+
+        const ease =
+            1 -
+            Math.pow(
+                1 - progress,
+                4
+            );
+
+
+        let x =
+            this.startX +
+            (
+                this.targetX -
+                this.startX
+            ) *
+            ease;
+
+
+        let y =
+            this.startY +
+            (
+                this.targetY -
+                this.startY
+            ) *
+            ease;
+
+
+        const swirl =
+            (1 - ease) *
+            this.orbit;
+
+
+        x +=
+            Math.cos(
+                elapsed *
+                2.1 *
+                this.direction +
+                this.phase
+            ) *
+            swirl;
+
+
+        y +=
+            Math.sin(
+                elapsed *
+                2.0 *
+                this.direction +
+                this.phase
+            ) *
+            swirl;
+
+
+        this.x = x;
+
+        this.y = y;
+    }
+
+
+    draw() {
+
+        ctx.fillStyle =
+            this.color;
+
+
+        ctx.fillRect(
+            this.x,
+            this.y,
+            this.size,
+            this.size
+        );
+    }
+}
+
+
+/* =========================================================
+   CREATE PARTICLES
+========================================================= */
+
+function createParticles() {
+
+    particles = [];
+
+
+    const tempCanvas =
+        document.createElement(
+            "canvas"
+        );
+
+
+    const tempCtx =
+        tempCanvas.getContext(
+            "2d",
+            {
+                willReadFrequently: true
+            }
+        );
+
+
+    const maxWidth =
+        window.innerWidth *
+        0.84;
+
+
+    const maxHeight =
+        window.innerHeight *
+        0.90;
+
+
+    const scale =
+        Math.min(
+            maxWidth / image.width,
+            maxHeight / image.height
+        );
+
+
+    const displayWidth =
+        Math.floor(
+            image.width *
+            scale
+        );
+
+
+    const displayHeight =
+        Math.floor(
+            image.height *
+            scale
+        );
+
+
+    const offsetX =
+        (
+            window.innerWidth -
+            displayWidth
+        ) / 2;
+
+
+    const offsetY =
+        (
+            window.innerHeight -
+            displayHeight
+        ) / 2;
+
+
+    let gap =
+        BASE_DOT_GAP;
+
+
+    while (
+        Math.floor(
+            displayWidth / gap
+        ) *
+        Math.floor(
+            displayHeight / gap
+        )
+        >
+        MAX_PARTICLES
+    ) {
+
+        gap++;
+    }
+
+
+    const smallWidth =
+        Math.floor(
+            displayWidth / gap
+        );
+
+
+    const smallHeight =
+        Math.floor(
+            displayHeight / gap
+        );
+
+
+    tempCanvas.width =
+        smallWidth;
+
+
+    tempCanvas.height =
+        smallHeight;
+
+
+    tempCtx.drawImage(
+        image,
+        0,
+        0,
+        smallWidth,
+        smallHeight
+    );
+
+
+    const pixels =
+        tempCtx.getImageData(
+            0,
+            0,
+            smallWidth,
+            smallHeight
+        ).data;
+
+
+    for (
+        let y = 0;
+        y < smallHeight;
+        y++
+    ) {
+
+        for (
+            let x = 0;
+            x < smallWidth;
+            x++
+        ) {
+
+            const index =
+                (
+                    y *
+                    smallWidth +
+                    x
+                ) * 4;
+
+
+            const r =
+                pixels[index];
+
+
+            const g =
+                pixels[index + 1];
+
+
+            const b =
+                pixels[index + 2];
+
+
+            const a =
+                pixels[index + 3];
+
+
+            if (a < 80) {
+                continue;
+            }
+
+
+            if (
+                r < 5 &&
+                g < 5 &&
+                b < 5
+            ) {
+                continue;
+            }
+
+
+            const targetX =
+                offsetX +
+                x * gap +
+                gap / 2;
+
+
+            const targetY =
+                offsetY +
+                y * gap +
+                gap / 2;
+
+
+            particles.push(
+                new Particle(
+                    targetX,
+                    targetY,
+                    r,
+                    g,
+                    b
+                )
+            );
+        }
+    }
+
+
+    console.log(
+        "Particles:",
+        particles.length
+    );
+}
+
+
+/* =========================================================
+   DRAW PARTICLES
+========================================================= */
+
+function drawParticles(elapsed) {
+
+    ctx.fillStyle =
+        "#000";
+
+
+    ctx.fillRect(
+        0,
+        0,
+        window.innerWidth,
+        window.innerHeight
+    );
+
+
+    for (
+        let i = 0;
+        i < particles.length;
+        i++
+    ) {
+
+        particles[i].update(
+            elapsed
+        );
+
+
+        particles[i].draw();
+    }
+}
+
+
+/* =========================================================
+   SHOW ORIGINAL IMAGE
+========================================================= */
+
+function showOriginalImage() {
+
+    if (finalImageShown) {
+        return;
+    }
+
+
+    finalImageShown = true;
+
+
+    finalImage.classList.add(
+        "show"
+    );
+
+
+    setTimeout(
+        () => {
+
+            canvas.style.display =
+                "none";
+
+            particles = [];
+
+        },
+        2600
+    );
+}
+
+
+/* =========================================================
+   MAIN PARTICLE ANIMATION
+========================================================= */
+
+function animate(timestamp) {
+
+    if (!animationStarted) {
+        return;
+    }
+
+
+    const elapsed =
+        (
+            timestamp -
+            animationStartTime
+        ) / 1000;
+
+
+    drawParticles(
+        elapsed
+    );
+
+
+    if (
+        elapsed >=
+        FORMATION_TIME +
+        MAX_DELAY
+    ) {
+
+        showOriginalImage();
+
+        return;
+    }
+
+
+    requestAnimationFrame(
+        animate
+    );
+}
+
+
+/* =========================================================
+   START BUTTON
+========================================================= */
+
+startButton.addEventListener(
+    "click",
+    () => {
+
+        /* =========================================
+           START MUSIC
+        ========================================= */
+
+        bgMusic.currentTime = 0;
+
+        bgMusic.volume = 0.7;
+
+
+        bgMusic.play()
+            .then(() => {
+
+                console.log(
+                    "Venkateswara music started."
+                );
+
+            })
+            .catch((error) => {
+
+                console.log(
+                    "Music playback error:",
+                    error
+                );
+
+            });
+
+
+        /* =========================================
+           CHECK IMAGE
+        ========================================= */
+
+        if (!imageReady) {
+
+            alert(
+                "Please wait for the image to load."
+            );
+
+            return;
+        }
+
+
+        if (animationStarted) {
+            return;
+        }
+
+
+        startButton.style.display =
+            "none";
+
+
+        loading.style.display =
+            "block";
+
+
+        setTimeout(
+            () => {
+
+                createParticles();
+
+
+                requestAnimationFrame(
+                    () => {
+
+                        loading.style.display =
+                            "none";
+
+
+                        animationStarted =
+                            true;
+
+
+                        animationStartTime =
+                            performance.now();
+
+
+                        requestAnimationFrame(
+                            animate
+                        );
+
+                    }
+                );
+
+            },
+            100
+        );
+
+    }
+);
+
+
+/* =========================================================
+   DIVINE FLOWER GARLAND SYSTEM
+========================================================= */
+
+const garlandCanvas =
+    document.getElementById(
+        "garlandCanvas"
+    );
+
+
+const garlandCtx =
+    garlandCanvas.getContext(
+        "2d"
+    );
+
+
+let garlandDpr = 1;
+
+
+/* =========================================================
+   GARLAND RESIZE
+========================================================= */
+
+function resizeGarlandCanvas() {
+
+    garlandDpr =
+        Math.min(
+            window.devicePixelRatio || 1,
+            1.5
+        );
+
+
+    garlandCanvas.width =
+        Math.floor(
+            window.innerWidth *
+            garlandDpr
+        );
+
+
+    garlandCanvas.height =
+        Math.floor(
+            window.innerHeight *
+            garlandDpr
+        );
+
+
+    garlandCanvas.style.width =
+        window.innerWidth + "px";
+
+
+    garlandCanvas.style.height =
+        window.innerHeight + "px";
+
+
+    garlandCtx.setTransform(
+        garlandDpr,
+        0,
+        0,
+        garlandDpr,
+        0,
+        0
+    );
+}
+
+
+resizeGarlandCanvas();
+
+
+window.addEventListener(
+    "resize",
+    resizeGarlandCanvas
+);
+
+
+/* =========================================================
+   FLOWER
+========================================================= */
+
+function drawFlower(
+    x,
+    y,
+    size,
+    rotation,
+    type = 0
+) {
+
+    garlandCtx.save();
+
+
+    garlandCtx.translate(
+        x,
+        y
+    );
+
+
+    garlandCtx.rotate(
+        rotation
+    );
+
+
+    garlandCtx.shadowBlur =
+        size * 0.6;
+
+
+    garlandCtx.shadowColor =
+        "rgba(255,170,80,0.45)";
+
+
+    const petalCount =
+        type === 1
+            ? 10
+            : 8;
+
+
+    for (
+        let i = 0;
+        i < petalCount;
+        i++
+    ) {
+
+        garlandCtx.save();
+
+
+        garlandCtx.rotate(
+            i *
+            Math.PI *
+            2 /
+            petalCount
+        );
+
+
+        garlandCtx.beginPath();
+
+
+        garlandCtx.ellipse(
+            0,
+            -size * 0.52,
+            size * 0.38,
+            size * 0.68,
+            0,
+            0,
+            Math.PI * 2
+        );
+
+
+        if (type === 0) {
+
+            garlandCtx.fillStyle =
+                "#ff9fba";
+
+        }
+        else if (type === 1) {
+
+            garlandCtx.fillStyle =
+                "#ffd35a";
+
+        }
+        else {
+
+            garlandCtx.fillStyle =
+                "#fff0a6";
+        }
+
+
+        garlandCtx.fill();
+
+
+        garlandCtx.restore();
+    }
+
+
+    garlandCtx.shadowBlur =
+        size * 0.4;
+
+
+    garlandCtx.shadowColor =
+        "rgba(255,220,70,0.8)";
+
+
+    garlandCtx.beginPath();
+
+
+    garlandCtx.arc(
+        0,
+        0,
+        size * 0.27,
+        0,
+        Math.PI * 2
+    );
+
+
+    garlandCtx.fillStyle =
+        "#ffd83d";
+
+
+    garlandCtx.fill();
+
+
+    garlandCtx.beginPath();
+
+
+    garlandCtx.arc(
+        0,
+        0,
+        size * 0.10,
+        0,
+        Math.PI * 2
+    );
+
+
+    garlandCtx.fillStyle =
+        "#b86b00";
+
+
+    garlandCtx.fill();
+
+
+    garlandCtx.restore();
+}
+
+
+/* =========================================================
+   LEAF
+========================================================= */
+
+function drawLeaf(
+    x,
+    y,
+    size,
+    rotation
+) {
+
+    garlandCtx.save();
+
+
+    garlandCtx.translate(
+        x,
+        y
+    );
+
+
+    garlandCtx.rotate(
+        rotation
+    );
+
+
+    garlandCtx.shadowBlur =
+        4;
+
+
+    garlandCtx.shadowColor =
+        "rgba(0,0,0,0.5)";
+
+
+    garlandCtx.beginPath();
+
+
+    garlandCtx.moveTo(
+        -size,
+        0
+    );
+
+
+    garlandCtx.quadraticCurveTo(
+        0,
+        -size * 0.65,
+        size,
+        0
+    );
+
+
+    garlandCtx.quadraticCurveTo(
+        0,
+        size * 0.65,
+        -size,
+        0
+    );
+
+
+    garlandCtx.closePath();
+
+
+    garlandCtx.fillStyle =
+        "#3f8f45";
+
+
+    garlandCtx.fill();
+
+
+    garlandCtx.beginPath();
+
+
+    garlandCtx.moveTo(
+        -size * 0.75,
+        0
+    );
+
+
+    garlandCtx.lineTo(
+        size * 0.75,
+        0
+    );
+
+
+    garlandCtx.strokeStyle =
+        "rgba(220,255,200,0.65)";
+
+
+    garlandCtx.lineWidth =
+        1;
+
+
+    garlandCtx.stroke();
+
+
+    garlandCtx.restore();
+}
+
+
+/* =========================================================
+   ROPE
+========================================================= */
+
+function drawRope(points) {
+
+    if (points.length < 2) {
+        return;
+    }
+
+
+    garlandCtx.beginPath();
+
+
+    garlandCtx.moveTo(
+        points[0].x,
+        points[0].y
+    );
+
+
+    for (
+        let i = 1;
+        i < points.length;
+        i++
+    ) {
+
+        garlandCtx.lineTo(
+            points[i].x,
+            points[i].y
+        );
+    }
+
+
+    garlandCtx.strokeStyle =
+        "#7a4824";
+
+
+    garlandCtx.lineWidth =
+        5;
+
+
+    garlandCtx.lineCap =
+        "round";
+
+
+    garlandCtx.stroke();
+
+
+    garlandCtx.beginPath();
+
+
+    garlandCtx.moveTo(
+        points[0].x - 1,
+        points[0].y
+    );
+
+
+    for (
+        let i = 1;
+        i < points.length;
+        i++
+    ) {
+
+        garlandCtx.lineTo(
+            points[i].x - 1,
+            points[i].y
+        );
+    }
+
+
+    garlandCtx.strokeStyle =
+        "rgba(255,205,120,0.65)";
+
+
+    garlandCtx.lineWidth =
+        1.2;
+
+
+    garlandCtx.stroke();
+}
+
+
+/* =========================================================
+   LEFT GARLAND
+========================================================= */
+
+function drawLeftGarland(time) {
+
+    const points = [];
+
+    const segments = 17;
+
+    const length =
+        Math.min(
+            window.innerHeight * 0.64,
+            560
+        );
+
+
+    const startX =
+        Math.min(
+            62,
+            window.innerWidth * 0.10
+        );
+
+
+    for (
+        let i = 0;
+        i < segments;
+        i++
+    ) {
+
+        const p =
+            i /
+            (segments - 1);
+
+
+        const y =
+            p * length;
+
+
+        const swing =
+            Math.sin(
+                time * 1.25 +
+                p * 2.8
+            ) *
+            (
+                5 +
+                p * 15
+            );
+
+
+        const curve =
+            p *
+            p *
+            55;
+
+
+        const x =
+            startX +
+            curve +
+            swing;
+
+
+        points.push({
+            x: x,
+            y: y
+        });
+    }
+
+
+    drawRope(points);
+
+
+    for (
+        let i = 0;
+        i < points.length;
+        i++
+    ) {
+
+        const point =
+            points[i];
+
+
+        const localSwing =
+            Math.sin(
+                time * 1.25 +
+                i * 0.45
+            );
+
+
+        if (
+            i % 2 === 0
+        ) {
+
+            const size =
+                i === 0
+                    ? 30
+                    : 20 +
+                      Math.sin(i) * 3;
+
+
+            drawFlower(
+                point.x +
+                localSwing * 2,
+                point.y,
+                size,
+                localSwing * 0.08,
+                i % 4 === 0
+                    ? 1
+                    : 0
+            );
+        }
+
+
+        if (
+            i % 2 === 1
+        ) {
+
+            drawLeaf(
+                point.x - 15,
+                point.y + 2,
+                13,
+                -0.75 +
+                localSwing * 0.04
+            );
+
+
+            drawLeaf(
+                point.x + 14,
+                point.y + 7,
+                12,
+                0.65 +
+                localSwing * 0.04
+            );
+        }
+    }
+}
+
+
+/* =========================================================
+   RIGHT GARLAND
+========================================================= */
+
+function drawRightGarland(time) {
+
+    const points = [];
+
+    const segments = 17;
+
+
+    const length =
+        Math.min(
+            window.innerHeight * 0.64,
+            560
+        );
+
+
+    const startX =
+        window.innerWidth -
+        Math.min(
+            62,
+            window.innerWidth * 0.10
+        );
+
+
+    for (
+        let i = 0;
+        i < segments;
+        i++
+    ) {
+
+        const p =
+            i /
+            (segments - 1);
+
+
+        const y =
+            p * length;
+
+
+        const swing =
+            Math.sin(
+                time * 1.25 +
+                p * 2.8 +
+                Math.PI
+            ) *
+            (
+                5 +
+                p * 15
+            );
+
+
+        const curve =
+            p *
+            p *
+            55;
+
+
+        const x =
+            startX -
+            curve +
+            swing;
+
+
+        points.push({
+            x: x,
+            y: y
+        });
+    }
+
+
+    drawRope(points);
+
+
+    for (
+        let i = 0;
+        i < points.length;
+        i++
+    ) {
+
+        const point =
+            points[i];
+
+
+        const localSwing =
+            Math.sin(
+                time * 1.25 +
+                i * 0.45 +
+                Math.PI
+            );
+
+
+        if (
+            i % 2 === 0
+        ) {
+
+            const size =
+                i === 0
+                    ? 30
+                    : 20 +
+                      Math.sin(i) * 3;
+
+
+            drawFlower(
+                point.x +
+                localSwing * 2,
+                point.y,
+                size,
+                -localSwing * 0.08,
+                i % 4 === 0
+                    ? 1
+                    : 0
+            );
+        }
+
+
+        if (
+            i % 2 === 1
+        ) {
+
+            drawLeaf(
+                point.x + 15,
+                point.y + 2,
+                13,
+                0.75 +
+                localSwing * 0.04
+            );
+
+
+            drawLeaf(
+                point.x - 14,
+                point.y + 7,
+                12,
+                -0.65 +
+                localSwing * 0.04
+            );
+        }
+    }
+}
+
+
+/* =========================================================
+   TOP CORNER BIG FLOWERS
+========================================================= */
+
+function drawCornerFlowers(time) {
+
+    const leftSwing =
+        Math.sin(
+            time * 1.1
+        ) * 5;
+
+
+    drawFlower(
+        48 + leftSwing,
+        38,
+        35,
+        leftSwing * 0.02,
+        1
+    );
+
+
+    const rightSwing =
+        Math.sin(
+            time * 1.1 +
+            Math.PI
+        ) * 5;
+
+
+    drawFlower(
+        window.innerWidth -
+        48 +
+        rightSwing,
+        38,
+        35,
+        rightSwing * 0.02,
+        1
+    );
+}
+
+
+/* =========================================================
+   SMALL HANGING FLOWERS
+========================================================= */
+
+function drawSmallHangingFlowers(time) {
+
+    const leftX =
+        24 +
+        Math.sin(time) * 3;
+
+
+    for (
+        let i = 0;
+        i < 5;
+        i++
+    ) {
+
+        const y =
+            95 +
+            i * 48;
+
+
+        const swing =
+            Math.sin(
+                time * 1.5 +
+                i
+            ) * 5;
+
+
+        drawFlower(
+            leftX + swing,
+            y,
+            11,
+            swing * 0.03,
+            i % 2
+        );
+    }
+
+
+    const rightX =
+        window.innerWidth -
+        24 +
+        Math.sin(
+            time * 1.1 +
+            Math.PI
+        ) * 3;
+
+
+    for (
+        let i = 0;
+        i < 5;
+        i++
+    ) {
+
+        const y =
+            95 +
+            i * 48;
+
+
+        const swing =
+            Math.sin(
+                time * 1.5 +
+                i +
+                Math.PI
+            ) * 5;
+
+
+        drawFlower(
+            rightX + swing,
+            y,
+            11,
+            swing * 0.03,
+            i % 2
+        );
+    }
+}
+
+
+/* =========================================================
+   GARLAND ANIMATION
+========================================================= */
+
+function animateGarlands(timestamp) {
+
+    const time =
+        timestamp / 1000;
+
+
+    garlandCtx.clearRect(
+        0,
+        0,
+        window.innerWidth,
+        window.innerHeight
+    );
+
+
+    drawLeftGarland(
+        time
+    );
+
+
+    drawRightGarland(
+        time
+    );
+
+
+    drawCornerFlowers(
+        time
+    );
+
+
+    drawSmallHangingFlowers(
+        time
+    );
+
+
+    requestAnimationFrame(
+        animateGarlands
+    );
+}
+
+
+/* =========================================================
+   START GARLAND ANIMATION
+========================================================= */
+
+requestAnimationFrame(
+    animateGarlands
+);
+
+
+/* =========================================================
+   RESIZE
+========================================================= */
+
+let resizeTimer = null;
+
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        clearTimeout(
+            resizeTimer
+        );
+
+
+        resizeTimer =
+            setTimeout(
+                () => {
+
+                    resizeCanvas();
+
+                    resizeGarlandCanvas();
+
+
+                    if (
+                        imageReady &&
+                        !animationStarted
+                    ) {
+
+                        createParticles();
+                    }
+
+                },
+                200
+            );
+
+    }
+);
+
+</script>
+
+</body>
+</html>
+```
