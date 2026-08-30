@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Particle Image Reveal</title>
+    <style>
+        /* CSS styling from the video */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000000;
+        }
+        canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #finalImage {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain; /* 'contain' ensures the whole image fits on screen */
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 3s ease; /* Smooth fade-in matching the video */
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <!-- IMPORTANT: Replace 'image.jpg' with the actual name of your image file -->
+    <img id="finalImage" src="Lord Venkateswara.jpg" alt="Reveal Image">
+
+    <script>
+        // Configuration
+        const REVEAL_TIME = 3000; // 6 seconds before image fades in
+        const PIXEL_SPACING = 6;  // Distance between particles (lower = more detailed but slower)
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const finalImage = document.getElementById('finalImage');
+
+        let particles = [];
+        let width, height;
+
+        // Ensure image is loaded before starting the effect
+        finalImage.onload = () => {
+            initParticles();
+            animate();
+            
+            // Trigger the fade-in effect after REVEAL_TIME
+            setTimeout(() => {
+                finalImage.style.opacity = 1;
+                canvas.style.opacity = 0; 
+                canvas.style.transition = "opacity 10s ease";
+            }, REVEAL_TIME);
+        };
+
+        function initParticles() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            // Use an offscreen canvas to analyze image pixels
+            const offCanvas = document.createElement('canvas');
+            const offCtx = offCanvas.getContext('2d');
+            
+            // Scale image to fit the screen while maintaining aspect ratio
+            const scale = Math.min(width / finalImage.naturalWidth, height / finalImage.naturalHeight);
+            const drawWidth = finalImage.naturalWidth * scale;
+            const drawHeight = finalImage.naturalHeight * scale;
+            const offsetX = (width - drawWidth) / 2;
+            const offsetY = (height - drawHeight) / 2;
+
+            offCanvas.width = width;
+            offCanvas.height = height;
+            offCtx.drawImage(finalImage, offsetX, offsetY, drawWidth, drawHeight);
+
+            // Read the pixel color data
+            const imgData = offCtx.getImageData(0, 0, width, height).data;
+
+            // Generate particles based on pixel colors
+            for (let y = 0; y < height; y += PIXEL_SPACING) {
+                for (let x = 0; x < width; x += PIXEL_SPACING) {
+                    const index = (y * width + x) * 4;
+                    const alpha = imgData[index + 3];
+
+                    if (alpha > 128) { // Ignore transparent pixels
+                        const r = imgData[index];
+                        const g = imgData[index + 1];
+                        const b = imgData[index + 2];
+                        
+                        particles.push({
+                            x: x,
+                            y: y,
+                            color: `rgb(${r},${g},${b})`,
+                            size: Math.random() * 1.5 + 1,
+                            alpha: 0,
+                            targetAlpha: Math.random() * 0.8 + 0.2 // Random max brightness for twinkling effect
+                        });
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            particles.forEach(p => {
+                // Fade particles in gradually
+                if (p.alpha < p.targetAlpha) {
+                    p.alpha += 0.005;
+                }
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+            });
+
+            ctx.globalAlpha = 1.0;
+            requestAnimationFrame(animate);
+        }
+
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            particles = [];
+            initParticles();
+        });
+    </script>
+</body>
+</html>
