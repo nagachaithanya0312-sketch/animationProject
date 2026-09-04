@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Form</title>
+    <style>
+        .color{
+            color:black;
+        }
+    </style>
+</head>
+
+<body style="background:rgb(255, 22, 61);">
+
+<h1 style="text-align:center; color:rgb(0, 0, 0);">Registration Form</h1>
+
+<form>
+    <table cellpadding="15" cellspacing="15" style="margin:auto; text-align:center; border:2px solid black; border-radius:15px; background:rgb(254, 254, 254);">
+
+        <tr>
+            <td class="color">Name</td>
+            <td><input type="text" placeholder="Enter your name"></td>
+        </tr>
+
+        <tr>
+            <td class="color">Email</td>
+            <td><input type="email" placeholder="Enter your email"></td>
+        </tr>
+
+        <tr>
+            <td class="color">Password</td>
+            <td><input type="password" placeholder="Enter password"></td>
+        </tr>
+
+        <tr>
+            <td class="color">Gender</td>
+            <td>
+                <input type="radio" name="g"> Male
+                <input type="radio" name="g"> Female
+            </td>
+        </tr>
+
+        <tr>
+            <td class="color">Course</td>
+            <td>
+                <select>
+                    <option>B.Tech</option>
+                    <option>B.Sc</option>
+                    <option>B.Com</option>
+                </select>
+            </td>
+        </tr>
+
+        <tr>
+            <td class="color">Address</td>
+            <td>
+                <textarea placeholder="Enter address"></textarea>
+            </td>
+        </tr>
+
+        <tr>
+            <td class="color">Upload Photo</td>
+            <td><input type="file"></td>
+        </tr>
+
+        <tr>
+            <td colspan="2" text-align="center">
+                <input type="submit" value="Register">
+                <input type="reset" value="Clear">
+            </td>
+        </tr>
+
+    </table>
+</form>
+
+</body>
+</html>

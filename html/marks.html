@@ -1,0 +1,138 @@
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Student Marks Calculator</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#4582f2,#eeaff2);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:30h;
+}
+
+.container{
+    width:500px;
+    background:rgb(254, 255, 252);
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0px 10px 25px rgba(0, 0, 0, 0.923);
+}
+
+h1{
+    text-align:center;
+    color:rgb(7, 53, 236);
+    margin-bottom:20px;
+    font-size:35px;
+}
+
+label{
+    font-size:18px;
+    font-weight:bold;
+    color:#333;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    margin-bottom:15px;
+    border:2px solid #000000;
+    border-radius:8px;
+    font-size:18px;
+}
+
+.result{
+    background:#a6cdf7;
+    padding:15px;
+    border-radius:10px;
+    margin-top:15px;
+}
+
+.result h3{
+    margin:10px 0;
+    color:#000000;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>📝  10th Exam Result</h1>
+
+<form oninput="
+total.value=Number(m1.value)+Number(m2.value)+Number(m3.value)+Number(m4.value)+Number(m5.value)+Number(m6.value);
+average.value=(total.value/7).toFixed(2);
+percentage.value=((total.value/600)*100).toFixed(2);
+
+result.value=(Number(m1.value)>=35 &&
+Number(m2.value)>=35 &&
+Number(m3.value)>=35&&
+Number(m4.value)>=35&&
+Number(m5.value)>=35&&
+Number(m6.value)>=35)?'PASS':'FAIL';
+
+">
+
+<label>TELUGU</label>
+<input type="number" id="m1" placeholder="Enter Marks" min="0" max="100">
+
+<label>ENGLISH</label>
+<input type="number" id="m2" placeholder="Enter Marks" min="0" max="100">
+
+<label>HINDI</label>
+<input type="number" id="m3" placeholder="Enter Marks" min="0" max="100">
+
+<label>MATHEMATICS</label>
+<input type="number" id="m4" placeholder="enter marks" min="0" max="100">    
+
+
+<label>SCIENCE</label>
+<input type="number" id="m5" placeholder="enter marks" min="0" max="100">    
+
+<label>SOCIAL</label>
+<input type="number" id="m6" placeholder="enter marks" min="0" max="100">    
+
+<div class="result">
+
+
+<h3>Total Marks : <output name="total">0</output></h3>
+
+<h3>Average : <output name="average">0</output></h3>
+
+<h3>Percentage : <output name="percentage">0</output>%</h3>
+
+<h3>Result : <output name="result">-</output></h3>
+
+</div>
+
+</form>
+
+</div>
+
+</body>
+</html>
+
+
+
+
+
+
+
+

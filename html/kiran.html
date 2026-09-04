@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SmartShop</title>
+
+    <style>
+body {
+    margin: 0;
+    font-family: Arial;
+}
+
+h1{
+   color:white;
+}
+.div{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px 30px;
+background:linear-gradient(to right, rgb(23, 23, 23), rgb(99, 96, 98));
+backdrop-filter:blur(20px);
+position:sticky;
+top:0;
+z-index:1000;
+color:rgb(243, 241, 241);
+}
+
+.menu{
+display:flex;
+align-items:center;
+gap:20px;
+}
+
+.menu span{
+cursor:pointer;
+transition:.3s;
+}
+
+.menu span:hover{
+color:rgb(234, 251, 2);
+}
+
+.search{
+width:300px;
+padding:10px;
+border:none;
+border-radius:25px;
+outline:none;
+}
+
+.heart{
+font-size:25px;
+color:rgb(246, 2, 2);
+text-align:right;
+cursor:pointer;
+}
+.products {
+    display: flex;
+    justify-content: center;
+     flex-wrap: wrap;
+       padding: 40px;
+       background: linear-gradient(to right, #dcdfe3, #ffffff);
+}
+
+.sale {
+text-align:center;
+padding:140px 20px;
+background:url(hero.jpg);
+background-size:cover;
+background-position:center;
+color:rgb(238, 232, 74);
+background:linear-gradient(to right,rgb(101, 101, 238), rgb(175, 50, 224));
+}
+
+.sale h1{
+font-size:50px;
+color:rgb(241, 241, 9);
+}
+
+.sale button{
+padding:15px 30px;
+margin:10px;
+border:none;
+border-radius:30px;
+font-size:18px;
+cursor:pointer;
+transition:.6s;
+color:rgb(109, 104, 104);
+background:rgb(241, 241, 236);
+    box-shadow: 0px 0px 10px rgb(194, 191, 191);
+
+}
+
+.sale button:hover{
+transform:scale(1.2);
+color:rgb(0, 0, 0);
+background:yellow;
+}
+
+
+.categories{
+display:flex;
+justify-content:center;
+gap:20px;
+padding:30px;
+flex-wrap:wrap;
+background:#f9f9f5e8;
+}
+
+.categories div{
+padding:15px 30px;
+background:rgb(255, 254, 254);
+border-radius:30px;
+cursor:pointer;
+box-shadow:0 5px 1px rgba(13, 13, 13, 0.983);
+transition:.4s;
+}
+
+.categories div:hover{
+background:#7986e7fb;
+color:rgb(255, 250, 250);
+transform:scalex(1.2);
+
+}
+.items {
+    width: 250px;
+            margin: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            background: linear-gradient(to right, #7996e5, #fafafa);
+            transition: 0.3s;
+            text-align: center;
+            
+}
+
+.items:hover {
+      transform:scalex(1.1);
+    box-shadow: 0 1px 20px rgb(1, 13, 254);
+}
+
+.items img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+
+.items button {
+    padding: 10px;
+    border: none;
+    background: rgb(242, 238, 238);
+    color: rgb(79, 76, 76);
+    cursor: pointer;
+    border-radius:15px;
+}
+
+.items button:hover {
+    background: rgb(236, 236, 85);
+   
+}
+
+.offer{
+    text-align:center;
+    padding:70px 20px;
+    background:linear-gradient(135deg,#ff6a00,#f90179);
+    color:rgb(255, 246, 246);
+}
+
+.offer h1{
+    font-size:42px;
+    margin-bottom:10px;
+}
+
+.offer h2{
+    font-size:32px;
+    margin:15px 0;
+}
+
+.offer span{
+    
+    font-weight:bold;
+}
+
+.offer p{
+    font-size:20px;
+    line-height:1.8;
+}
+
+.offer button{
+    margin-top:20px;
+    padding:15px 35px;
+    border:none;
+    border-radius:30px;
+    background:white;
+    color:#ff0066;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.offer button:hover{
+    background:yellow;
+    transform:scale(1.08);
+}
+
+
+.footer {
+    text-align: center;
+    padding: 15px;
+    color: white;
+    background: #111;
+}
+
+.profile {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;   /* makes circle */
+    object-fit: cover;    /* keeps image perfect */
+    cursor: pointer;
+    border: 2px solid white;
+    margin-left: 10px;
+}
+
+.profile:hover {
+    transform: scale(1.1);
+    transition: 0.3s;
+}
+
+.img{width:100%; height:300px; object-fit:cover;}
+
+.badge{
+display:inline-block;
+background:red;
+color:white;
+padding:5px 12px;
+border-radius:20px;
+font-size:12px;
+margin:10px;
+
+}
+
+
+/* ===== Text Color Animation ===== */
+
+@keyframes colorChange {
+    0% {
+        color: #ff5e01;      /* Red */
+    }
+    20% {
+        color: #ffff00;      /* Yellow */
+    }
+    40% {
+        color: #00ffff;      /* Cyan */
+    }
+    60% {
+        color: #fefffe;      /* Green */
+    }
+    80% {
+        color: #ff00ff;      /* Pink */
+    }
+    100% {
+        color: #00f621;      /* White */
+    }
+}
+
+.sale h1,
+.sale h2,
+.sale p {
+    animation: colorChange 5s infinite;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgb(26, 26, 25);
+}
+
+.offer h1,
+.offer h2,
+.offer p,
+.offer span{
+    animation: textColor 2s infinite alternate;
+}
+
+@keyframes textColor {
+
+
+
+    100% {
+        color: rgb(255, 230, 0);
+    }
+
+}
+
+    </style>
+</head>
+
+<body>
+
+<div class="div">
+
+    <h1><em>🛍️ SmartShop</em></h1>
+
+    <input type="text" placeholder="🔍 Search products..." class="search">
+
+    <div class="menu">
+        <span>Home</span>
+        <span>Products</span>
+        <span>Offers</span>
+        <span>Contact</span>
+        <span>❤️ Wishlist</span>
+        <span>🛒 Cart (0)</span>
+        <img src="smart.jpg" class="profile">
+    </div>
+
+
+</div>
+
+<div class="sale">
+
+<h1>🔥 Mega Summer Sale</h1>
+
+<h2>Up to 50% OFF</h2>
+
+<p>Discover thousands of amazing products.</p>
+
+<button>Shop Now</button>
+
+<button class="explore">Explore Products</button>
+
+</div>
+
+<div class="categories">
+
+<div>📱 Mobiles</div>
+
+<div>💻 Laptops</div>
+
+<div>⌚ Watches</div>
+
+<div>🎧 Audio</div>
+
+<div>🎮 Gaming</div>
+
+<div>👜 Bags</div>
+
+</div>
+
+<div class="products">
+
+    <div class="items">
+        <img src="camara.jpg" class="img">
+         <div class="heart">❤</div>
+         ⭐⭐⭐⭐⭐ 4.9
+        <h3>Headphones</h3>
+        <h3>HP Laptop</h3> 
+        
+       
+
+        <div class="badge">Grab 50% OFF Now</div>
+
+        <p>$120</p>
+      
+         <button><em>ADD TO CART</em></button>
+    </div>
+
+    <div class="items">
+        <img src="camara.jpg" class="img" >
+           <div class="heart">❤</div>
+        
+        ⭐⭐⭐⭐⭐ 4.8
+        <h3>carama</h3>
+        
+        <div class="badge">Grab 50% OFF Now</div>
+        <p>$85</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+    <div class="items">
+        <img src="casio.jpg" class="img">
+           <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.9
+        <h3>watch</h3>
+        <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+        <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="airpord.jpg" class="img">
+        
+           <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.5
+        <h3>airpords max</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button class="cursor"><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="earphones.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.3
+        <h3>apple earphones</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+        <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="hp.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.2
+        <h3>hp laptop</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+        <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="fossile.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.1
+        <h3> fossile watch</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="goboult.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.00
+        <h3>goboult</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="iphone.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.3
+        <h3>iphone 16</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="jbl.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.8
+        <h3>JBL headphones</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="samsung.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.3
+        <h3>samsung 25 ultra</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="speakar.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.2
+        <h3>JBL speaker</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="vr.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.00
+        <h3>VR gaming</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="yellow polaroid.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.2
+        <h3>mini yellow cemara</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="flip.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.5
+        <h3>HP omnibookflip 16</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="combo.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.3
+        <h3>gaming keypad mouse set</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="breton stock.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.6
+        <h3>breton stock</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="box.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.9
+        <h3>JBL head phones</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="bag.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.8
+        <h3>smart bag</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="fossile smart.jpg"class="img">
+         <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.3
+        <h3>fossile smart watch</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="infinix.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.1
+        <h3>infinix mobile</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="ipad.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.6
+        <h3>ipad</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="jbl.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.9
+        <h3>jbl headphones</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="magnetic power bank.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.8
+        <h3>magnetic power bank</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="moto.jpg"class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.1
+        <h3>motorola edge mobile</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="mouse.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.2
+        <h3>magic mouse</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="nike.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.3
+        <h3>nike bag</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="omni.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.9
+        <h3>laptop sleeve</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="one.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.8
+        <h3>one plus phone</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="pencil.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.7
+        <h3>digital pencil</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="puma.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.8
+        <h3>puma bag</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="roadster.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.9
+        <h3>roadster shoes</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="sleeve.jpg" class="img">
+
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.5
+        <h3>laptop sleeve</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+        <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="smart watch.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.3
+        <h3> smart watch</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="soni.jpg"class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.9
+        <h3>sony speaker</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="stock.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.8
+        <h3>Breton stock</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="tuf.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.5
+        <h3>TUF laptop</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+     <div class="items">
+        <img src="uspa.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.4
+        <h3>USPA shoes</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+    <div class="items">
+        <img src="charmast.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.6
+        <h3>power bank</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+    <div class="items">
+        <img src="samsung galaxy.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.7
+        <h3>samsung galaxy ultra</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+    <div class="items">
+        <img src="tuf.jpg" class="img">
+        <div class="heart">❤</div>
+        ⭐⭐⭐⭐⭐ 4.3
+        <h3>laptop stand</h3>
+         <div class="badge">Grab 50% OFF Now</div>
+        <p>$100</p>
+       <button><em>ADD TO CART</em></button>
+    </div>
+
+</div>
+
+<div class="offer">
+
+    <h1>🎉 Limited Time Mega Sale! 🔥</h1>
+
+    <h2>💥 Save Up To <span>50% OFF</span> 💥</h2>
+
+    <p>
+        🛍️ Shop your favorite gadgets at unbeatable prices!<br>
+        ⏰ Hurry! Offer ends soon. Don't miss out! 🚀
+    </p>
+
+    <button>🛒 Shop Now</button>
+
+</div>
+<div class="footer">
+    © 2026 SmartShop | All Rights Reserved
+</div>
+
+</body>
+</html>

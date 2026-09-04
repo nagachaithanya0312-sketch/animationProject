@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ultra Modern Website</title>
+
+<style>
+
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+
+body{
+  background:#040121;
+  color:white;
+  overflow-x:hidden;
+}
+
+
+.div{
+  display:flex;
+  justify-content:space-between;
+  padding:25px 60px;
+  position:fixed;
+  width:100%;
+  background:rgba(32, 32, 32, 0.326);
+  backdrop-filter:blur(20px);
+}
+
+.logo{
+  font-size:26px;
+  font-weight:bold;
+  color:#59ccfd;
+}
+
+.page{
+  display:flex;
+  gap:40px;
+}
+
+.page div{
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.page div:hover{
+  color:#38bdf8;
+}
+
+
+.content{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  text-align:center;
+
+  background: radial-gradient(circle at top, #1e293b, #020617);
+}
+
+.content h1{
+  font-size:65px;
+  background:linear-gradient(90deg,#38bdf8,#a78bfa);
+  -webkit-background-clip:text;
+  color:transparent;
+  animation: glow 2s infinite alternate;
+}
+
+.content p{
+  margin:20px;
+  color:#94a3b8;
+}
+
+.button{
+  padding:14px 30px;
+  background:linear-gradient(90deg,#38bdf8,#6366f1);
+  border-radius:30px;
+  cursor:pointer;
+  transition:0.4s;
+}
+
+.button:hover{
+  transform:scale(1.1);
+  box-shadow:0 0 25px #38bdf8;
+}
+
+
+.features{
+  display:flex;
+  justify-content:center;
+  gap:30px;
+  padding:80px 40px;
+}
+
+.box{
+  width:300px;
+  padding:30px;
+  border-radius:30px;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(20px);
+
+  transition:0.4s;
+}
+
+.box:hover{
+  transform:translateY(-20px) scale(1.10);
+  box-shadow:0 0 30px rgba(56,189,248,0.4);
+}
+
+.footer{
+  text-align:center;
+  padding:30px;
+  color:#94a3b8;
+}
+
+
+@keyframes glow{
+  from{
+    text-shadow:0 0 10px #38bdf8;
+  }
+  to{
+    text-shadow:0 0 30px #a78bfa;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="div">
+  <div class="logo">NextGen</div>
+  <div class="page">
+    <div>Home</div>
+    <div>Features</div>
+    <div>Pricing</div>
+    <div>Contact</div>
+  </div>
+</div>
+
+
+<div class="content">
+  <h1>Future of Web Design</h1>
+  <p>Create powerful and modern UI with animations</p>
+  <div class="button">Explore Now</div>
+</div>
+
+<div class="features">
+
+  <div class="box">
+    <h2>Speed</h2>
+    <p>Fast and optimized design</p>
+  </div>
+
+  <div class="box">
+    <h2>Modern UI</h2>
+    <p>Beautiful glassmorphism style</p>
+  </div>
+
+  <div class="box">
+    <h2>Responsive</h2>
+    <p>Works on all devices</p>
+  </div>
+
+</div>
+
+
+<div class="footer">
+  © 2026 Ultra Website
+</div>
+
+</body>
+</html>

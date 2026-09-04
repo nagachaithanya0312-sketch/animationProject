@@ -1,0 +1,2436 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Hara Hara Mahadev - Divine Temple</title>
+
+    <style>
+
+        /* =========================================================
+           GLOBAL
+        ========================================================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #020508;
+        }
+
+        body {
+            background:
+                radial-gradient(
+                    ellipse at 50% 45%,
+                    #102538 0%,
+                    #06101b 30%,
+                    #03070d 60%,
+                    #000000 100%
+                );
+        }
+
+
+        /* =========================================================
+           STARS
+        ========================================================= */
+
+        .stars {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            background: #d8f6ff;
+            box-shadow: 0 0 8px #65d8ff;
+            animation: twinkle linear infinite;
+        }
+
+        @keyframes twinkle {
+            0%,
+            100% {
+                opacity: .15;
+                transform: scale(.7);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.5);
+            }
+        }
+
+
+        /* =========================================================
+           TITLE
+        ========================================================= */
+
+        .title {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 300;
+
+            font-size: clamp(25px, 4.5vw, 60px);
+            font-weight: 900;
+            letter-spacing: clamp(2px, 1vw, 9px);
+
+            white-space: nowrap;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #ffffff,
+                    #ffffff,
+                    #ffd75a,
+                    #fff4bd,
+                    #dba52a,
+                    #ffffff
+                );
+
+            background-size: 300% auto;
+
+            -webkit-background-clip: text;
+            background-clip: text;
+
+            color: transparent;
+
+            animation:
+                titleGold 5s linear infinite,
+                titleFloat 3s ease-in-out infinite;
+
+            text-shadow:
+                0 0 10px rgba(255, 215, 90, .5),
+                0 0 25px rgba(255, 255, 255, .25);
+        }
+
+        .title-main {
+            display: block;
+            text-align: center;
+        }
+
+        .title-mantra {
+            display: block;
+            margin-top: 3px;
+            font-size: .34em;
+            letter-spacing: 4px;
+            text-align: center;
+        }
+
+        @keyframes titleGold {
+
+            0% {
+                background-position: 0% center;
+            }
+
+            100% {
+                background-position: 300% center;
+            }
+
+        }
+
+        @keyframes titleFloat {
+
+            0%,
+            100% {
+                transform:
+                    translateX(-50%)
+                    translateY(0);
+            }
+
+            50% {
+                transform:
+                    translateX(-50%)
+                    translateY(-5px);
+            }
+
+        }
+
+
+        /* =========================================================
+           TEMPLE CONTAINER
+        ========================================================= */
+
+        .temple {
+            position: fixed;
+
+            width: min(82vw, 760px);
+            height: min(76vh, 720px);
+
+            left: 50%;
+            top: 57%;
+
+            transform:
+                translate(-50%, -50%);
+
+            z-index: 20;
+
+            perspective: 1800px;
+        }
+
+        .temple-building {
+            position: absolute;
+            inset: 0;
+
+            filter:
+                drop-shadow(
+                    0 25px 45px
+                    rgba(0, 0, 0, .95)
+                );
+        }
+
+
+        /* =========================================================
+           TEMPLE ROOF
+        ========================================================= */
+
+        .temple-roof {
+            position: absolute;
+
+            width: 112%;
+            height: 27%;
+
+            top: -10%;
+            left: -6%;
+
+            z-index: 4;
+
+            clip-path:
+                polygon(
+                    50% 0%,
+                    56% 8%,
+                    61% 18%,
+                    68% 32%,
+                    76% 48%,
+                    88% 68%,
+                    100% 100%,
+                    0% 100%,
+                    12% 68%,
+                    24% 48%,
+                    32% 32%,
+                    39% 18%,
+                    44% 8%
+                );
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #3b1d03,
+                    #80500a 12%,
+                    #d29a27 28%,
+                    #ffe28a 48%,
+                    #d8a235 62%,
+                    #87500a 82%,
+                    #3b1d03
+                );
+
+            box-shadow:
+                inset 0 -15px 25px rgba(0, 0, 0, .5),
+                0 0 35px rgba(230, 170, 45, .3);
+        }
+
+
+        /* =========================================================
+           KALASAM
+        ========================================================= */
+
+        .kalasam {
+            position: absolute;
+
+            width: 36px;
+            height: 75px;
+
+            top: -18%;
+            left: 50%;
+
+            transform:
+                translateX(-50%);
+
+            z-index: 8;
+        }
+
+        .kalasam::before {
+            content: "";
+
+            position: absolute;
+
+            width: 34px;
+            height: 34px;
+
+            border-radius: 50%;
+
+            top: 25px;
+            left: 1px;
+
+            background:
+                radial-gradient(
+                    circle at 30% 25%,
+                    #fff8cf,
+                    #e1ae32 35%,
+                    #9a5b08 65%,
+                    #4c2600
+                );
+
+            box-shadow:
+                inset -5px -5px 8px rgba(0,0,0,.45),
+                0 0 12px rgba(255,215,90,.4);
+        }
+
+        .kalasam::after {
+            content: "";
+
+            position: absolute;
+
+            width: 7px;
+            height: 36px;
+
+            left: 14px;
+            top: 0;
+
+            border-radius: 6px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #a76508,
+                    #fff3a5,
+                    #b8750a
+                );
+        }
+
+
+        /* =========================================================
+           TEMPLE WALL
+        ========================================================= */
+
+        .temple-wall {
+            position: absolute;
+
+            left: 4%;
+            right: 4%;
+
+            top: 17%;
+            bottom: 2%;
+
+            border:
+                clamp(10px, 1.8vw, 20px)
+                solid
+                #b27a16;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #301802,
+                    #704707 8%,
+                    #c99329 18%,
+                    #704807 30%,
+                    #bd8420 50%,
+                    #704707 70%,
+                    #d4a139 88%,
+                    #351b03
+                );
+
+            box-shadow:
+                inset 0 0 30px rgba(0,0,0,.75),
+                inset 0 0 8px rgba(255,224,120,.7),
+                0 0 35px rgba(220,160,40,.2);
+        }
+
+
+        /* =========================================================
+           TEMPLE DECORATIVE WALL LINES
+        ========================================================= */
+
+        .temple-wall::before {
+            content: "";
+
+            position: absolute;
+
+            left: 3%;
+            right: 3%;
+
+            top: 4%;
+
+            height: 8px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #4d2803,
+                    #f6cf65,
+                    #80500a,
+                    #f6cf65,
+                    #4d2803
+                );
+
+            box-shadow:
+                0 6px 10px rgba(0,0,0,.6);
+        }
+
+        .temple-wall::after {
+            content: "";
+
+            position: absolute;
+
+            left: 3%;
+            right: 3%;
+
+            bottom: 2%;
+
+            height: 8px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #3b1c02,
+                    #e9bb4b,
+                    #754600,
+                    #e9bb4b,
+                    #3b1c02
+                );
+        }
+
+
+        /* =========================================================
+           PILLARS
+        ========================================================= */
+
+        .pillar {
+            position: absolute;
+
+            top: 8%;
+            bottom: 0;
+
+            width: 12%;
+
+            z-index: 30;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #301700,
+                    #875309 22%,
+                    #e0ae3d 43%,
+                    #f5d36f 50%,
+                    #a66c10 72%,
+                    #321800
+                );
+
+            box-shadow:
+                inset 4px 0 8px rgba(255,230,130,.45),
+                inset -5px 0 12px rgba(0,0,0,.65),
+                0 0 10px rgba(0,0,0,.5);
+        }
+
+        .pillar-left {
+            left: -4%;
+        }
+
+        .pillar-right {
+            right: -4%;
+        }
+
+        .pillar::before,
+        .pillar::after {
+            content: "";
+
+            position: absolute;
+
+            left: -15%;
+            width: 130%;
+            height: 28px;
+
+            background:
+                linear-gradient(
+                    #482300,
+                    #f5ce61,
+                    #9a5e08,
+                    #4b2500
+                );
+
+            box-shadow:
+                0 4px 10px rgba(0,0,0,.7);
+        }
+
+        .pillar::before {
+            top: 8%;
+        }
+
+        .pillar::after {
+            bottom: 8%;
+        }
+
+
+        /* =========================================================
+           INNER SANCTUM
+        ========================================================= */
+
+        .inner-sanctum {
+            position: absolute;
+
+            top: 20%;
+            bottom: 4%;
+
+            left: 9%;
+            right: 9%;
+
+            overflow: hidden;
+
+            z-index: 12;
+
+            background:
+                radial-gradient(
+                    ellipse at center,
+                    #182b40 0%,
+                    #07111c 40%,
+                    #02070c 75%,
+                    #000000 100%
+                );
+
+            box-shadow:
+                inset 0 0 70px #000,
+                inset 0 0 25px rgba(0,0,0,.9);
+        }
+
+
+        /* =========================================================
+           DIVINE LIGHT
+        ========================================================= */
+
+        .divine-light {
+            position: absolute;
+
+            width: 90%;
+            height: 85%;
+
+            left: 5%;
+            top: 7%;
+
+            border-radius: 50%;
+
+            background:
+                radial-gradient(
+                    ellipse,
+                    rgba(75,190,255,.28),
+                    rgba(35,120,210,.10) 35%,
+                    transparent 70%
+                );
+
+            filter: blur(20px);
+
+            opacity: .6;
+
+            animation:
+                divinePulse 4s ease-in-out infinite;
+        }
+
+        @keyframes divinePulse {
+
+            0%,
+            100% {
+                transform: scale(.9);
+                opacity: .4;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: .9;
+            }
+
+        }
+
+
+        /* =========================================================
+           PARTICLE CANVAS
+        ========================================================= */
+
+        #canvas {
+            position: absolute;
+
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            z-index: 20;
+
+            pointer-events: none;
+        }
+
+
+        /* =========================================================
+           REALISTIC TEMPLE DOORS
+        ========================================================= */
+
+        .doors {
+            position: absolute;
+
+            top: 20%;
+            bottom: 4%;
+
+            left: 9%;
+            right: 9%;
+
+            z-index: 40;
+
+            pointer-events: auto;
+
+            transform-style: preserve-3d;
+        }
+
+
+        .door {
+            position: absolute;
+
+            top: 0;
+
+            width: 50%;
+            height: 100%;
+
+            cursor: pointer;
+
+            overflow: hidden;
+
+            transition:
+                transform 2.2s cubic-bezier(.16,.85,.25,1),
+                filter 1.5s;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #170700 0%,
+                    #3c1802 8%,
+                    #70400a 20%,
+                    #b67516 38%,
+                    #e0ad43 50%,
+                    #a76611 68%,
+                    #5b2e05 85%,
+                    #200a00 100%
+                );
+
+            border:
+                4px solid #d6a53a;
+
+            box-shadow:
+                inset 0 0 40px rgba(0,0,0,.85),
+                inset 0 0 12px rgba(255,220,110,.5),
+                0 8px 25px rgba(0,0,0,.9);
+
+            transform-style: preserve-3d;
+
+            will-change: transform;
+        }
+
+
+        .left-door {
+            left: 0;
+            transform-origin: left center;
+        }
+
+        .right-door {
+            right: 0;
+            transform-origin: right center;
+        }
+
+
+        /* =========================================================
+           DOOR WOOD GRAIN
+        ========================================================= */
+
+        .door::before {
+            content: "";
+
+            position: absolute;
+
+            inset: 0;
+
+            opacity: .32;
+
+            background:
+                repeating-linear-gradient(
+                    90deg,
+                    transparent 0px,
+                    transparent 12px,
+                    rgba(60,25,0,.35) 14px,
+                    transparent 18px,
+                    transparent 29px
+                );
+
+            pointer-events: none;
+        }
+
+
+        /* =========================================================
+           DOOR INNER BORDER
+        ========================================================= */
+
+        .door::after {
+            content: "";
+
+            position: absolute;
+
+            inset: 4%;
+
+            border:
+                2px solid
+                rgba(255,220,120,.65);
+
+            box-shadow:
+                inset 0 0 15px rgba(0,0,0,.5);
+
+            pointer-events: none;
+        }
+
+
+        /* =========================================================
+           DOOR PANELS
+        ========================================================= */
+
+        .door-panel {
+            position: absolute;
+
+            left: 9%;
+            right: 9%;
+
+            height: 23%;
+
+            border:
+                4px solid
+                #d5a039;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(255,220,120,.16),
+                    rgba(60,25,0,.38),
+                    rgba(240,190,70,.15)
+                );
+
+            box-shadow:
+                inset 0 0 18px rgba(0,0,0,.8),
+                inset 0 0 5px rgba(255,220,110,.5),
+                0 2px 8px rgba(0,0,0,.7);
+        }
+
+
+        .panel-1 {
+            top: 7%;
+        }
+
+        .panel-2 {
+            top: 38%;
+        }
+
+        .panel-3 {
+            bottom: 7%;
+        }
+
+
+        /* =========================================================
+           PANEL DECORATIVE CENTER
+        ========================================================= */
+
+        .door-panel::before {
+            content: "✦";
+
+            position: absolute;
+
+            left: 50%;
+            top: 50%;
+
+            transform:
+                translate(-50%, -50%);
+
+            color: rgba(255,224,130,.55);
+
+            font-size: 24px;
+
+            text-shadow:
+                0 0 8px #dca92d;
+        }
+
+
+        .door-panel::after {
+            content: "";
+
+            position: absolute;
+
+            left: 12%;
+            right: 12%;
+
+            top: 50%;
+
+            height: 2px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(255,220,120,.6),
+                    transparent
+                );
+        }
+
+
+        /* =========================================================
+           OM SYMBOL
+        ========================================================= */
+
+        .door-symbol {
+            position: absolute;
+
+            left: 50%;
+            top: 50%;
+
+            transform:
+                translate(-50%, -50%);
+
+            z-index: 5;
+
+            font-size:
+                clamp(52px, 8vw, 110px);
+
+            font-family:
+                "Noto Sans Devanagari",
+                "Arial Unicode MS",
+                sans-serif;
+
+            color: #ffeaa0;
+
+            text-shadow:
+                0 0 5px #fff0a0,
+                0 0 12px #f7b91d,
+                0 0 28px #a85f00,
+                2px 3px 4px #321500;
+        }
+
+
+        /* =========================================================
+           REALISTIC DOOR HANDLE
+        ========================================================= */
+
+        .handle {
+            position: absolute;
+
+            top: 50%;
+
+            width: 23px;
+            height: 23px;
+
+            border-radius: 50%;
+
+            z-index: 10;
+
+            background:
+                radial-gradient(
+                    circle at 30% 25%,
+                    #fff5b0 0%,
+                    #e7b842 25%,
+                    #a4660b 55%,
+                    #4a2500 100%
+                );
+
+            border:
+                2px solid #5b3100;
+
+            box-shadow:
+                0 0 8px rgba(255,210,70,.8),
+                inset -3px -3px 5px rgba(0,0,0,.5);
+        }
+
+        .left-door .handle {
+            right: 7%;
+        }
+
+        .right-door .handle {
+            left: 7%;
+        }
+
+
+        /* =========================================================
+           DOOR HANDLE PLATE
+        ========================================================= */
+
+        .handle::after {
+            content: "";
+
+            position: absolute;
+
+            width: 38px;
+            height: 55px;
+
+            left: 50%;
+            top: 50%;
+
+            transform:
+                translate(-50%, -50%);
+
+            border:
+                2px solid rgba(210,160,50,.65);
+
+            border-radius:
+                50%;
+
+            z-index: -1;
+        }
+
+
+        /* =========================================================
+           DOOR HINGES
+        ========================================================= */
+
+        .hinge {
+            position: absolute;
+
+            width: 11px;
+            height: 45px;
+
+            border-radius: 5px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #442100,
+                    #e3b348,
+                    #724000
+                );
+
+            box-shadow:
+                0 3px 7px rgba(0,0,0,.8);
+        }
+
+        .hinge-1 {
+            top: 15%;
+        }
+
+        .hinge-2 {
+            top: 47%;
+        }
+
+        .hinge-3 {
+            bottom: 15%;
+        }
+
+        .left-door .hinge {
+            left: 1%;
+        }
+
+        .right-door .hinge {
+            right: 1%;
+        }
+
+
+        /* =========================================================
+           OPEN DOORS
+        ========================================================= */
+
+        .temple.open .left-door {
+            transform:
+                rotateY(-108deg);
+
+            filter:
+                brightness(.65);
+        }
+
+        .temple.open .right-door {
+            transform:
+                rotateY(108deg);
+
+            filter:
+                brightness(.65);
+        }
+
+
+        /* =========================================================
+           DOOR TEXT
+        ========================================================= */
+
+        .door-text {
+            position: fixed;
+
+            bottom: 18px;
+            left: 50%;
+
+            transform:
+                translateX(-50%);
+
+            z-index: 300;
+
+            color: #bdeeff;
+
+            font-size:
+                clamp(11px, 1.8vw, 15px);
+
+            letter-spacing: 3px;
+
+            white-space: nowrap;
+
+            text-shadow:
+                0 0 12px #47cfff;
+
+            animation:
+                instructionPulse 2s ease-in-out infinite;
+
+            pointer-events: none;
+        }
+
+        @keyframes instructionPulse {
+
+            0%,
+            100% {
+                opacity: .4;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+        }
+
+
+        /* =========================================================
+           REALISTIC TEMPLE BELLS
+        ========================================================= */
+
+        .bell {
+            position: fixed;
+
+            top: 0;
+
+            width: 115px;
+            height: 245px;
+
+            z-index: 150;
+
+            transform-origin:
+                top center;
+
+            pointer-events: none;
+
+            filter:
+                drop-shadow(
+                    0 10px 15px
+                    rgba(0,0,0,.8)
+                );
+        }
+
+        .bell-left {
+            left: 3%;
+
+            animation:
+                bellSwingLeft
+                3.8s
+                ease-in-out
+                infinite;
+        }
+
+        .bell-right {
+            right: 3%;
+
+            animation:
+                bellSwingRight
+                4.1s
+                ease-in-out
+                infinite;
+        }
+
+
+        /* =========================================================
+           BELL ROPE
+        ========================================================= */
+
+        .bell-rope {
+            position: absolute;
+
+            top: 0;
+            left: 50%;
+
+            width: 6px;
+            height: 110px;
+
+            transform:
+                translateX(-50%);
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #4c2802,
+                    #d5a438 30%,
+                    #f2d071 50%,
+                    #815006 75%,
+                    #351800
+                );
+
+            box-shadow:
+                2px 0 4px rgba(0,0,0,.6);
+        }
+
+
+        /* =========================================================
+           BELL TOP MOUNT
+        ========================================================= */
+
+        .bell-top {
+            position: absolute;
+
+            top: 88px;
+            left: 50%;
+
+            width: 48px;
+            height: 30px;
+
+            transform:
+                translateX(-50%);
+
+            border-radius:
+                50% 50% 20% 20%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #674000,
+                    #f3cc65 30%,
+                    #fff0a0 50%,
+                    #c18a1b 70%,
+                    #543000
+                );
+
+            box-shadow:
+                inset 0 -5px 8px rgba(0,0,0,.45),
+                0 4px 8px rgba(0,0,0,.6);
+        }
+
+
+        /* =========================================================
+           BELL CROWN
+        ========================================================= */
+
+        .bell-top::before {
+            content: "";
+
+            position: absolute;
+
+            width: 22px;
+            height: 18px;
+
+            left: 50%;
+            top: -10px;
+
+            transform:
+                translateX(-50%);
+
+            border-radius:
+                50% 50% 20% 20%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #6a4000,
+                    #f4cf68,
+                    #7d4b04
+                );
+        }
+
+
+        /* =========================================================
+           BELL BODY
+        ========================================================= */
+
+        .bell-body {
+            position: absolute;
+
+            top: 108px;
+            left: 50%;
+
+            width: 82px;
+            height: 83px;
+
+            transform:
+                translateX(-50%);
+
+            border-radius:
+                46% 46%
+                30% 30%
+                50% 50%;
+
+            background:
+                radial-gradient(
+                    ellipse at 32% 18%,
+                    #fff6b6 0%,
+                    #e9b73e 22%,
+                    #bd7c0d 45%,
+                    #754300 72%,
+                    #321800 100%
+                );
+
+            border:
+                2px solid #9b650d;
+
+            box-shadow:
+                inset -13px -13px 20px rgba(0,0,0,.42),
+                inset 8px 5px 12px rgba(255,235,150,.35),
+                0 8px 15px rgba(0,0,0,.75);
+        }
+
+
+        /* =========================================================
+           BELL CARVING
+        ========================================================= */
+
+        .bell-body::before {
+            content: "ॐ";
+
+            position: absolute;
+
+            left: 50%;
+            top: 40%;
+
+            transform:
+                translate(-50%, -50%);
+
+            color:
+                rgba(255,231,140,.55);
+
+            font-size: 28px;
+
+            text-shadow:
+                0 1px 2px #4c2800;
+        }
+
+
+        /* =========================================================
+           BELL RIM
+        ========================================================= */
+
+        .bell-body::after {
+            content: "";
+
+            position: absolute;
+
+            width: 94px;
+            height: 18px;
+
+            left: 50%;
+            bottom: -7px;
+
+            transform:
+                translateX(-50%);
+
+            border-radius: 50%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #4a2500,
+                    #a9680a 15%,
+                    #f1c554 35%,
+                    #ffe88c 50%,
+                    #c48a1e 70%,
+                    #552c00 100%
+                );
+
+            border:
+                2px solid #9c650d;
+
+            box-shadow:
+                0 4px 7px rgba(0,0,0,.65);
+        }
+
+
+        /* =========================================================
+           BELL CLAPPER
+        ========================================================= */
+
+        .bell-clapper {
+            position: absolute;
+
+            top: 177px;
+            left: 50%;
+
+            width: 17px;
+            height: 32px;
+
+            transform:
+                translateX(-50%);
+
+            border-radius:
+                50% 50% 48% 48%;
+
+            background:
+                radial-gradient(
+                    circle at 30% 25%,
+                    #f2c95d,
+                    #9c6107 55%,
+                    #472300
+                );
+
+            box-shadow:
+                0 3px 7px rgba(0,0,0,.8);
+        }
+
+
+        /* =========================================================
+           BELL LOWER ROPE
+        ========================================================= */
+
+        .bell-clapper::after {
+            content: "";
+
+            position: absolute;
+
+            width: 4px;
+            height: 25px;
+
+            left: 50%;
+            top: -22px;
+
+            transform:
+                translateX(-50%);
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #5c3300,
+                    #e1b13d,
+                    #643900
+                );
+        }
+
+
+        /* =========================================================
+           BELL SWING
+        ========================================================= */
+
+        @keyframes bellSwingLeft {
+
+            0%,
+            100% {
+                transform:
+                    rotate(5deg);
+            }
+
+            50% {
+                transform:
+                    rotate(-5deg);
+            }
+
+        }
+
+        @keyframes bellSwingRight {
+
+            0%,
+            100% {
+                transform:
+                    rotate(-4deg);
+            }
+
+            50% {
+                transform:
+                    rotate(4deg);
+            }
+
+        }
+
+
+        /* =========================================================
+           MOBILE
+        ========================================================= */
+
+        @media (max-width: 600px) {
+
+            .temple {
+                width: 94vw;
+                height: 70vh;
+                top: 58%;
+            }
+
+            .bell {
+                transform: scale(.68);
+            }
+
+            .bell-left {
+                left: -3%;
+            }
+
+            .bell-right {
+                right: -3%;
+            }
+
+            .title {
+                top: 15px;
+                letter-spacing: 2px;
+            }
+
+            .title-mantra {
+                letter-spacing: 2px;
+            }
+
+            .door-text {
+                letter-spacing: 2px;
+            }
+
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+
+    <!-- =========================================================
+         STARS
+    ========================================================= -->
+
+    <div
+        class="stars"
+        id="stars">
+    </div>
+
+
+    <!-- =========================================================
+         TITLE
+    ========================================================= -->
+
+    <div class="title">
+
+        <span class="title-main">
+              
+        </span>
+
+        <span class="title-mantra">
+            ॐ नमः शिवाय
+        </span>
+
+    </div>
+
+
+    <!-- =========================================================
+         LEFT REALISTIC BELL
+    ========================================================= -->
+
+    <div class="bell bell-left">
+
+        <div class="bell-rope"></div>
+
+        <div class="bell-top"></div>
+
+        <div class="bell-body"></div>
+
+        <div class="bell-clapper"></div>
+
+    </div>
+
+
+    <!-- =========================================================
+         RIGHT REALISTIC BELL
+    ========================================================= -->
+
+    <div class="bell bell-right">
+
+        <div class="bell-rope"></div>
+
+        <div class="bell-top"></div>
+
+        <div class="bell-body"></div>
+
+        <div class="bell-clapper"></div>
+
+    </div>
+
+
+    <!-- =========================================================
+         TEMPLE
+    ========================================================= -->
+
+    <div
+        class="temple"
+        id="temple">
+
+        <div class="temple-building">
+
+
+            <!-- TEMPLE ROOF -->
+
+            <div class="temple-roof"></div>
+
+
+            <!-- KALASAM -->
+
+            <div class="kalasam"></div>
+
+
+            <!-- TEMPLE WALL -->
+
+            <div class="temple-wall"></div>
+
+
+            <!-- PILLARS -->
+
+            <div class="pillar pillar-left"></div>
+
+            <div class="pillar pillar-right"></div>
+
+
+            <!-- INNER SANCTUM -->
+
+            <div
+                class="inner-sanctum"
+                id="sanctum">
+
+                <div class="divine-light"></div>
+
+                <canvas id="canvas"></canvas>
+
+            </div>
+
+
+            <!-- =================================================
+                 DOORS
+            ================================================= -->
+
+            <div class="doors">
+
+
+                <!-- LEFT DOOR -->
+
+                <div class="door left-door">
+
+                    <div class="door-panel panel-1"></div>
+
+                    <div class="door-panel panel-2"></div>
+
+                    <div class="door-panel panel-3"></div>
+
+
+                    <div class="door-symbol">
+                        ॐ
+                    </div>
+
+
+                    <div class="handle"></div>
+
+
+                    <div class="hinge hinge-1"></div>
+                    <div class="hinge hinge-2"></div>
+                    <div class="hinge hinge-3"></div>
+
+                </div>
+
+
+                <!-- RIGHT DOOR -->
+
+                <div class="door right-door">
+
+                    <div class="door-panel panel-1"></div>
+
+                    <div class="door-panel panel-2"></div>
+
+                    <div class="door-panel panel-3"></div>
+
+
+                    <div class="door-symbol">
+                        ॐ
+                    </div>
+
+
+                    <div class="handle"></div>
+
+
+                    <div class="hinge hinge-1"></div>
+                    <div class="hinge hinge-2"></div>
+                    <div class="hinge hinge-3"></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         INSTRUCTION
+    ========================================================= -->
+
+    <div
+        class="door-text"
+        id="doorText">
+
+        TOUCH DOORS TO OPEN
+
+    </div>
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+    ========================================================= -->
+
+    <script>
+
+
+        /* =========================================================
+           CREATE STARS
+        ========================================================= */
+
+        const starsContainer =
+            document.getElementById("stars");
+
+
+        for (let i = 0; i < 120; i++) {
+
+            const star =
+                document.createElement("div");
+
+            star.className = "star";
+
+
+            star.style.left =
+                Math.random() * 100 + "%";
+
+
+            star.style.top =
+                Math.random() * 100 + "%";
+
+
+            const size =
+                Math.random() * 2 + 1;
+
+
+            star.style.width =
+                size + "px";
+
+
+            star.style.height =
+                size + "px";
+
+
+            star.style.animationDuration =
+                2 +
+                Math.random() * 4 +
+                "s";
+
+
+            star.style.animationDelay =
+                Math.random() * 4 +
+                "s";
+
+
+            starsContainer.appendChild(star);
+
+        }
+
+
+        /* =========================================================
+           ELEMENTS
+        ========================================================= */
+
+        const canvas =
+            document.getElementById("canvas");
+
+        const sanctum =
+            document.getElementById("sanctum");
+
+        const temple =
+            document.getElementById("temple");
+
+        const doorText =
+            document.getElementById("doorText");
+
+
+        const ctx =
+            canvas.getContext("2d");
+
+
+        let W = 0;
+        let H = 0;
+        let DPR = 1;
+
+
+        /* =========================================================
+           PARTICLES
+        ========================================================= */
+
+        let particles = [];
+
+        let formation = 0;
+
+        let targetFormation = 0;
+
+
+        /* =========================================================
+           SHIVA IMAGE
+        ========================================================= */
+
+        const sivaImage =
+            new Image();
+
+
+        sivaImage.src =
+            "om.jpg";
+
+
+        /* =========================================================
+           PARTICLE CLASS
+        ========================================================= */
+
+        class Particle {
+
+            constructor(
+                tx,
+                ty,
+                r,
+                g,
+                b,
+                size
+            ) {
+
+                this.tx = tx;
+                this.ty = ty;
+
+
+                const angle =
+                    Math.random() *
+                    Math.PI *
+                    2;
+
+
+                const distance =
+                    100 +
+                    Math.random() *
+                    Math.max(W, H) *
+                    1.2;
+
+
+                this.sx =
+                    W / 2 +
+                    Math.cos(angle) *
+                    distance;
+
+
+                this.sy =
+                    H / 2 +
+                    Math.sin(angle) *
+                    distance;
+
+
+                this.x =
+                    this.sx;
+
+                this.y =
+                    this.sy;
+
+
+                this.r = r;
+                this.g = g;
+                this.b = b;
+
+
+                this.size =
+                    size;
+
+
+                this.delay =
+                    Math.random();
+
+
+                this.phase =
+                    Math.random() *
+                    Math.PI *
+                    2;
+
+
+                this.speed =
+                    0.045 +
+                    Math.random() *
+                    0.025;
+
+
+                this.alpha = 0;
+
+            }
+
+
+            update(time) {
+
+                const individualFormation =
+                    Math.max(
+                        0,
+                        Math.min(
+                            1,
+                            (
+                                formation -
+                                this.delay * 0.20
+                            ) /
+                            0.80
+                        )
+                    );
+
+
+                const smooth =
+                    individualFormation *
+                    individualFormation *
+                    (
+                        3 -
+                        2 *
+                        individualFormation
+                    );
+
+
+                const targetX =
+                    this.sx +
+                    (
+                        this.tx -
+                        this.sx
+                    ) *
+                    smooth;
+
+
+                const targetY =
+                    this.sy +
+                    (
+                        this.ty -
+                        this.sy
+                    ) *
+                    smooth;
+
+
+                this.x +=
+                    (
+                        targetX -
+                        this.x
+                    ) *
+                    this.speed;
+
+
+                this.y +=
+                    (
+                        targetY -
+                        this.y
+                    ) *
+                    this.speed;
+
+
+                if (
+                    individualFormation > .95
+                ) {
+
+                    this.x +=
+                        Math.sin(
+                            time * .0008 +
+                            this.phase
+                        ) *
+                        .035;
+
+
+                    this.y +=
+                        Math.cos(
+                            time * .0009 +
+                            this.phase
+                        ) *
+                        .035;
+
+                }
+
+
+                this.alpha =
+                    individualFormation;
+
+            }
+
+
+            draw() {
+
+                if (
+                    this.alpha <= .01
+                ) {
+                    return;
+                }
+
+
+                ctx.fillStyle =
+                    `rgba(
+                        ${this.r},
+                        ${this.g},
+                        ${this.b},
+                        ${this.alpha}
+                    )`;
+
+
+                ctx.fillRect(
+                    Math.round(this.x),
+                    Math.round(this.y),
+                    this.size,
+                    this.size
+                );
+
+            }
+
+        }
+
+
+        /* =========================================================
+           RESIZE CANVAS
+        ========================================================= */
+
+        function resizeCanvas() {
+
+            const rect =
+                sanctum.getBoundingClientRect();
+
+
+            DPR =
+                Math.min(
+                    window.devicePixelRatio || 1,
+                    2
+                );
+
+
+            W =
+                Math.max(
+                    1,
+                    rect.width
+                );
+
+
+            H =
+                Math.max(
+                    1,
+                    rect.height
+                );
+
+
+            canvas.width =
+                Math.floor(
+                    W * DPR
+                );
+
+
+            canvas.height =
+                Math.floor(
+                    H * DPR
+                );
+
+
+            canvas.style.width =
+                W + "px";
+
+
+            canvas.style.height =
+                H + "px";
+
+
+            ctx.setTransform(
+                DPR,
+                0,
+                0,
+                DPR,
+                0,
+                0
+            );
+
+
+            if (
+                sivaImage.complete &&
+                sivaImage.naturalWidth
+            ) {
+
+                createParticles(
+                    sivaImage
+                );
+
+            }
+
+        }
+
+
+        window.addEventListener(
+            "resize",
+            resizeCanvas
+        );
+
+
+        /* =========================================================
+           CREATE PARTICLES
+        ========================================================= */
+
+        function createParticles(img) {
+
+            particles = [];
+
+
+            const maxWidth =
+                W * .86;
+
+
+            const maxHeight =
+                H * .90;
+
+
+            const imageRatio =
+                img.naturalWidth /
+                img.naturalHeight;
+
+
+            let drawWidth;
+            let drawHeight;
+
+
+            if (
+                imageRatio >
+                maxWidth / maxHeight
+            ) {
+
+                drawWidth =
+                    maxWidth;
+
+                drawHeight =
+                    drawWidth /
+                    imageRatio;
+
+            }
+
+            else {
+
+                drawHeight =
+                    maxHeight;
+
+                drawWidth =
+                    drawHeight *
+                    imageRatio;
+
+            }
+
+
+            const offsetX =
+                (
+                    W -
+                    drawWidth
+                ) / 2;
+
+
+            const offsetY =
+                (
+                    H -
+                    drawHeight
+                ) / 2;
+
+
+            const processWidth =
+                Math.min(
+                    420,
+                    Math.floor(drawWidth)
+                );
+
+
+            const processHeight =
+                Math.max(
+                    1,
+                    Math.floor(
+                        processWidth /
+                        imageRatio
+                    )
+                );
+
+
+            const offscreen =
+                document.createElement(
+                    "canvas"
+                );
+
+
+            offscreen.width =
+                processWidth;
+
+
+            offscreen.height =
+                processHeight;
+
+
+            const octx =
+                offscreen.getContext(
+                    "2d",
+                    {
+                        willReadFrequently: true
+                    }
+                );
+
+
+            octx.imageSmoothingEnabled =
+                true;
+
+
+            octx.imageSmoothingQuality =
+                "high";
+
+
+            octx.drawImage(
+                img,
+                0,
+                0,
+                processWidth,
+                processHeight
+            );
+
+
+            const imageData =
+                octx.getImageData(
+                    0,
+                    0,
+                    processWidth,
+                    processHeight
+                );
+
+
+            const data =
+                imageData.data;
+
+
+            const sample = 2;
+
+
+            const maxParticles =
+                W < 500
+                    ? 18000
+                    : 38000;
+
+
+            for (
+                let y = 0;
+                y < processHeight;
+                y += sample
+            ) {
+
+                for (
+                    let x = 0;
+                    x < processWidth;
+                    x += sample
+                ) {
+
+                    const index =
+                        (
+                            y *
+                            processWidth +
+                            x
+                        ) * 4;
+
+
+                    const r =
+                        data[index];
+
+
+                    const g =
+                        data[index + 1];
+
+
+                    const b =
+                        data[index + 2];
+
+
+                    const alpha =
+                        data[index + 3];
+
+
+                    if (
+                        alpha < 10
+                    ) {
+                        continue;
+                    }
+
+
+                    const tx =
+                        offsetX +
+                        (
+                            x /
+                            processWidth
+                        ) *
+                        drawWidth;
+
+
+                    const ty =
+                        offsetY +
+                        (
+                            y /
+                            processHeight
+                        ) *
+                        drawHeight;
+
+
+                    let size =
+                        1.45;
+
+
+                    const brightness =
+                        r * .299 +
+                        g * .587 +
+                        b * .114;
+
+
+                    if (
+                        brightness > 220
+                    ) {
+
+                        size = 1.7;
+
+                    }
+
+                    else if (
+                        brightness < 50
+                    ) {
+
+                        size = 1.35;
+
+                    }
+
+
+                    particles.push(
+                        new Particle(
+                            tx,
+                            ty,
+                            r,
+                            g,
+                            b,
+                            size
+                        )
+                    );
+
+
+                    if (
+                        particles.length >=
+                        maxParticles
+                    ) {
+
+                        break;
+
+                    }
+
+                }
+
+
+                if (
+                    particles.length >=
+                    maxParticles
+                ) {
+
+                    break;
+
+                }
+
+            }
+
+
+            console.log(
+                "Shiva particles:",
+                particles.length
+            );
+
+        }
+
+
+        /* =========================================================
+           DOOR CONTROL
+        ========================================================= */
+
+        let doorsOpen = false;
+
+
+        function toggleDoors() {
+
+            doorsOpen =
+                !doorsOpen;
+
+
+            if (
+                doorsOpen
+            ) {
+
+                temple.classList.add(
+                    "open"
+                );
+
+
+                doorText.textContent =
+                    "TOUCH DOORS TO CLOSE";
+
+
+                targetFormation = 1;
+
+            }
+
+            else {
+
+                temple.classList.remove(
+                    "open"
+                );
+
+
+                doorText.textContent =
+                    "TOUCH DOORS TO OPEN";
+
+
+                targetFormation = 0;
+
+            }
+
+        }
+
+
+        /* =========================================================
+           CLICK
+        ========================================================= */
+
+        temple.addEventListener(
+            "click",
+            function () {
+
+                toggleDoors();
+
+            }
+        );
+
+
+        /* =========================================================
+           TOUCH
+        ========================================================= */
+
+        temple.addEventListener(
+            "touchstart",
+            function (e) {
+
+                e.preventDefault();
+
+                toggleDoors();
+
+            },
+            {
+                passive: false
+            }
+        );
+
+
+        /* =========================================================
+           FORMATION
+        ========================================================= */
+
+        function updateFormation() {
+
+            formation +=
+                (
+                    targetFormation -
+                    formation
+                ) *
+                .025;
+
+
+            if (
+                Math.abs(
+                    targetFormation -
+                    formation
+                ) < .0005
+            ) {
+
+                formation =
+                    targetFormation;
+
+            }
+
+        }
+
+
+        /* =========================================================
+           ANIMATION
+        ========================================================= */
+
+        function animate(time) {
+
+            ctx.clearRect(
+                0,
+                0,
+                W,
+                H
+            );
+
+
+            updateFormation();
+
+
+            for (
+                let i = 0;
+                i < particles.length;
+                i++
+            ) {
+
+                const p =
+                    particles[i];
+
+
+                p.update(time);
+
+                p.draw();
+
+            }
+
+
+            requestAnimationFrame(
+                animate
+            );
+
+        }
+
+
+        /* =========================================================
+           START
+        ========================================================= */
+
+        sivaImage.onload =
+            function () {
+
+                resizeCanvas();
+
+                console.log(
+                    "om.jpg loaded successfully"
+                );
+
+            };
+
+
+        sivaImage.onerror =
+            function () {
+
+                console.error(
+                    "ERROR: om.jpg not found."
+                );
+
+                console.error(
+                    "Place om.jpg in the same folder as index.html."
+                );
+
+            };
+
+
+        requestAnimationFrame(
+            animate
+        );
+
+
+    </script>
+
+</body>
+</html>
+```
