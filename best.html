@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morphing Particle Wave with Cursor Interaction</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #050508;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ui-container {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 10px 10px 24px;
+            border-radius: 50px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            outline: none;
+            font-size: 18px;
+            width: 250px;
+            letter-spacing: 1px;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #createBtn {
+            background: linear-gradient(135deg, #743ad5, #d53a9d);
+        }
+
+        #scatterBtn {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="ui-container">
+        <input type="text" id="textInput" value="nani" placeholder="Type name or emoji...">
+        <div class="btn-group">
+            <button id="scatterBtn">💥 Scatter</button>
+            <button id="createBtn">➔ Morph</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        
+        let width, height;
+        let particles = [];
+        const PARTICLE_COUNT = 5000;
+        let mode = 'sphere'; 
+        let sphereRotation = 0;
+        let globalHue = 250; // Starting color
+
+        // Mouse Tracker Object
+        const mouse = {
+            x: -1000,
+            y: -1000,
+            radius: 120 // Interaction radius
+        };
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Mouse and Touch Event Listeners
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+        window.addEventListener('mouseout', () => {
+            mouse.x = -1000;
+            mouse.y = -1000;
+        });
+        window.addEventListener('touchstart', (e) => {
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+        });
+        window.addEventListener('touchmove', (e) => {
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+        });
+        window.addEventListener('touchend', () => {
+            mouse.x = -1000;
+            mouse.y = -1000;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = (Math.random() - 0.5) * width; 
+                this.y = (Math.random() - 0.5) * height; 
+                this.z = (Math.random() - 0.5) * 1000;
+                this.targetX = this.x; 
+                this.targetY = this.y; 
+                this.targetZ = this.z;
+                this.baseX = 0; this.baseY = 0; this.baseZ = 0;
+                
+                // Varied sizes and hues for depth and color richness
+                this.size = Math.random() * 2 + 0.8;
+                this.hueOffset = Math.random() * 40 - 20; 
+                
+                // Spring physics
+                this.friction = 0.88 + Math.random() * 0.04;
+                this.ease = 0.03 + Math.random() * 0.04;
+                this.vx = 0; this.vy = 0; this.vz = 0;
+            }
+
+            update() {
+                // Spring towards target
+                let dx = this.targetX - this.x;
+                let dy = this.targetY - this.y;
+                let dz = this.targetZ - this.z;
+
+                this.vx += dx * this.ease;
+                this.vy += dy * this.ease;
+                this.vz += dz * this.ease;
+
+                // Mouse Repulsion Physics
+                const fov = 500;
+                const scale = fov / (fov + this.z);
+                
+                if (scale > 0) {
+                    const x2d = (this.x * scale) + width / 2;
+                    const y2d = (this.y * scale) + height / 2;
+                    
+                    const dxMouse = x2d - mouse.x;
+                    const dyMouse = y2d - mouse.y;
+                    const distSq = dxMouse * dxMouse + dyMouse * dyMouse;
+                    const radSq = mouse.radius * mouse.radius;
+
+                    if (distSq < radSq) {
+                        const distance = Math.sqrt(distSq);
+                        const force = (mouse.radius - distance) / mouse.radius;
+                        const pushStrength = 15; // How strongly they bounce away
+                        
+                        this.vx += (dxMouse / distance) * force * pushStrength;
+                        this.vy += (dyMouse / distance) * force * pushStrength;
+                    }
+                }
+
+                // Apply friction and move
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                this.vz *= this.friction;
+
+                this.x += this.vx;
+                this.y += this.vy;
+                this.z += this.vz;
+            }
+
+            draw() {
+                const fov = 500;
+                const scale = fov / (fov + this.z);
+                const x2d = (this.x * scale) + width / 2;
+                const y2d = (this.y * scale) + height / 2;
+                
+                // Don't draw if behind camera
+                if (scale < 0) return;
+
+                const alpha = Math.max(0.05, Math.min(1, scale * 1.5 - 0.2));
+
+                // Dynamic color changing based on global hue
+                ctx.fillStyle = `hsla(${globalHue + this.hueOffset}, 90%, 65%, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(x2d, y2d, this.size * scale, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Initialize
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push(new Particle());
+        }
+
+        // Smooth wave transition engine
+        function applyTargets(newTargets) {
+            // Sort by X coordinate to create a smooth sweeping wave from left to right
+            particles.sort((a, b) => a.x - b.x);
+            newTargets.sort((a, b) => a.x - b.x);
+
+            particles.forEach((p, i) => {
+                // Stagger the movement to create the "wave" effect
+                setTimeout(() => {
+                    p.targetX = newTargets[i].x;
+                    p.targetY = newTargets[i].y;
+                    p.targetZ = newTargets[i].z;
+                    
+                    if (newTargets[i].baseX !== undefined) {
+                        p.baseX = newTargets[i].baseX;
+                        p.baseZ = newTargets[i].baseZ;
+                    }
+                }, i * 0.15); // Delay in milliseconds per particle
+            });
+        }
+
+        function formSphere() {
+            mode = 'sphere';
+            const radius = Math.min(width, height) * 0.25; // Tight globe
+            const phi = Math.PI * (3 - Math.sqrt(5));
+            let targets = [];
+
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                let y = 1 - (i / (PARTICLE_COUNT - 1)) * 2;
+                let r = Math.sqrt(1 - y * y);
+                let theta = phi * i;
+
+                let x = Math.cos(theta) * r;
+                let z = Math.sin(theta) * r;
+
+                targets.push({
+                    x: x * radius,
+                    y: y * radius,
+                    z: z * radius,
+                    baseX: x * radius,
+                    baseZ: z * radius
+                });
+            }
+            applyTargets(targets);
+        }
+
+        function formText(text) {
+            mode = 'text';
+            const offscreen = document.createElement('canvas');
+            const oCtx = offscreen.getContext('2d', { willReadFrequently: true });
+            offscreen.width = width;
+            offscreen.height = height;
+
+            const fontSize = Math.min(width * 0.2, 250);
+            oCtx.fillStyle = 'white';
+            oCtx.font = `bold ${fontSize}px sans-serif`;
+            oCtx.textAlign = 'center';
+            oCtx.textBaseline = 'middle';
+            oCtx.fillText(text, width / 2, height / 2);
+
+            const imgData = oCtx.getImageData(0, 0, width, height).data;
+            const textPoints = [];
+
+            // Scan pixels skipping by 4 to map coordinates
+            for (let y = 0; y < height; y += 4) {
+                for (let x = 0; x < width; x += 4) {
+                    const alpha = imgData[(y * width + x) * 4 + 3];
+                    if (alpha > 128) {
+                        textPoints.push({ x: x - width/2, y: y - height/2 });
+                    }
+                }
+            }
+
+            if (textPoints.length === 0) {
+                formSphere();
+                return;
+            }
+
+            let targets = [];
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const pt = textPoints[i % textPoints.length];
+                const rx = (Math.random() - 0.5) * 6;
+                const ry = (Math.random() - 0.5) * 6;
+
+                targets.push({
+                    x: pt.x + rx,
+                    y: pt.y + ry,
+                    z: (Math.random() - 0.5) * 30, // Flattens the text slightly
+                    baseX: pt.x,
+                    baseZ: 0
+                });
+            }
+            applyTargets(targets);
+        }
+
+        function formScatter() {
+            mode = 'scatter';
+            let targets = [];
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                targets.push({
+                    x: (Math.random() - 0.5) * width * 1.5,
+                    y: (Math.random() - 0.5) * height * 1.5,
+                    z: (Math.random() - 0.5) * 1500,
+                    baseX: 0,
+                    baseZ: 0
+                });
+            }
+            applyTargets(targets);
+        }
+
+        function drawBackground() {
+            ctx.fillStyle = '#050508';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Dynamic subtle glowing stars matching global color
+            ctx.fillStyle = `hsla(${globalHue}, 50%, 50%, 0.3)`;
+            for(let i=0; i<80; i++) {
+                let sx = (Math.sin(i * 13) * 0.5 + 0.5) * width;
+                let sy = (Math.cos(i * 17) * 0.5 + 0.5) * height;
+                ctx.fillRect(sx, sy, 2, 2);
+            }
+        }
+
+        function animate() {
+            drawBackground();
+            
+            // Increment global hue for continuous color changing
+            globalHue += 0.3;
+            if (globalHue > 360) globalHue = 0;
+
+            if (mode === 'sphere') {
+                sphereRotation += 0.005; // Rotate the globe
+                let cosR = Math.cos(sphereRotation);
+                let sinR = Math.sin(sphereRotation);
+
+                for (let i = 0; i < particles.length; i++) {
+                    let p = particles[i];
+                    p.targetX = p.baseX * cosR - p.baseZ * sinR;
+                    p.targetZ = p.baseZ * cosR + p.baseX * sinR;
+                }
+            } else if (mode === 'text') {
+                sphereRotation = Math.sin(Date.now() * 0.001) * 0.1; // Gentle wobble for text
+                let cosR = Math.cos(sphereRotation);
+                let sinR = Math.sin(sphereRotation);
+                
+                for (let i = 0; i < particles.length; i++) {
+                    let p = particles[i];
+                    p.targetX = p.baseX * cosR - p.baseZ * sinR;
+                }
+            }
+
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Event Listeners
+        document.getElementById('createBtn').addEventListener('click', () => {
+            const val = document.getElementById('textInput').value;
+            if(val.trim() === '') {
+                formSphere();
+            } else {
+                formText(val);
+            }
+        });
+
+        document.getElementById('scatterBtn').addEventListener('click', () => {
+            formScatter();
+        });
+
+        document.getElementById('textInput').addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') {
+                document.getElementById('createBtn').click();
+            }
+        });
+
+        // Initialize with a tight globe
+        setTimeout(formSphere, 500);
+        animate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Interactive Particle Text - Responsive</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0f1013;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: crosshair;
+        }
+        canvas {
+            display: block;
+        }
+        #textInput {
+            position: absolute;
+            top: -100px;
+            left: -100px;
+            opacity: 0;
+        }
+        #micBtn {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #micBtn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        #micBtn.listening {
+            background-color: rgba(255, 50, 50, 0.2);
+            border-color: #ff3333;
+            color: #ff3333;
+            box-shadow: 0 0 15px rgba(255, 50, 50, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <input type="text" id="textInput" autofocus autocomplete="off">
+    <button id="micBtn">🎤 Start Voice Access</button>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const input = document.getElementById('textInput');
+        const micBtn = document.getElementById('micBtn');
+        
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        
+        const TOTAL_PARTICLES = 8500;
+        let particles = [];
+        let text = ""; 
+        let hue = 320; 
+        
+        const mouse = {
+            x: null,
+            y: null,
+            radius: 120
+        };
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+        });
+
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        window.addEventListener('touchend', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        input.focus();
+        document.addEventListener('click', (e) => {
+            if(e.target !== micBtn) input.focus();
+        });
+
+        // --- Voice Recognition Setup ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+        let isListening = false;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true; 
+            
+            recognition.onstart = () => {
+                isListening = true;
+                micBtn.classList.add('listening');
+                micBtn.innerHTML = "🔴 Listening... (Click to Stop)";
+            };
+            
+            recognition.onresult = (event) => {
+                let transcript = '';
+                for (let i = 0; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                
+                input.value = transcript.trim();
+                activeColor = updateTextPixels(input.value);
+            };
+            
+            recognition.onend = () => {
+                isListening = false;
+                micBtn.classList.remove('listening');
+                micBtn.innerHTML = "🎤 Start Voice Access";
+            };
+            
+            micBtn.addEventListener('click', () => {
+                if (isListening) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            });
+        } else {
+            micBtn.style.display = 'none';
+            console.warn("Speech Recognition API not supported in this browser.");
+        }
+        // -------------------------------
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = 0;
+                this.size = Math.random() * 2.5 + 0.5;
+                
+                this.isText = false;
+                this.targetX = 0;
+                this.targetY = 0;
+
+                this.isTopBand = Math.random() > 0.5;
+                this.baseX = Math.random() * width;
+                this.speedY = (Math.random() * 2.5 + 0.5) * (Math.random() > 0.5 ? 1 : -1);
+            }
+
+            update() {
+                if (this.isText) {
+                    let jitterX = this.targetX + (Math.random() - 0.5) * 2;
+                    let jitterY = this.targetY + (Math.random() - 0.5) * 2;
+                    
+                    let dx = jitterX - this.x;
+                    let dy = jitterY - this.y;
+
+                    this.vx += dx * 0.06;
+                    this.vy += dy * 0.06;
+                } else {
+                    let bandMin = this.isTopBand ? -50 : height * 0.65;
+                    let bandMax = this.isTopBand ? height * 0.35 : height + 50;
+
+                    let dx = this.baseX - this.x;
+                    this.vx += dx * 0.02 + (Math.random() - 0.5) * 0.5;
+
+                    this.vy += (this.speedY - this.vy) * 0.1;
+                    
+                    if (this.y > bandMax) this.y = bandMin;
+                    if (this.y < bandMin) this.y = bandMax;
+                }
+
+                if (mouse.x !== null && mouse.y !== null) {
+                    let dxMouse = mouse.x - this.x;
+                    let dyMouse = mouse.y - this.y;
+                    let distance = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+                    
+                    if (distance < mouse.radius) {
+                        let forceDirectionX = dxMouse / distance;
+                        let forceDirectionY = dyMouse / distance;
+                        let force = (mouse.radius - distance) / mouse.radius;
+                        
+                        let directionX = forceDirectionX * force * 15;
+                        let directionY = forceDirectionY * force * 15;
+
+                        this.vx -= directionX;
+                        this.vy -= directionY;
+                    }
+                }
+
+                this.vx *= 0.82;
+                this.vy *= 0.82;
+
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+
+            draw(ctx, currentColor) {
+                ctx.fillStyle = this.isText ? currentColor : `hsl(${hue}, 80%, 40%)`;
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+            }
+        }
+
+        for (let i = 0; i < TOTAL_PARTICLES; i++) {
+            particles.push(new Particle());
+        }
+
+        function updateTextPixels(inputText) {
+            hue = (hue + 55) % 360; 
+            const currentColor = `hsl(${hue}, 100%, 65%)`;
+
+            const offscreen = document.createElement('canvas');
+            const octx = offscreen.getContext('2d', { willReadFrequently: true });
+            offscreen.width = width;
+            offscreen.height = height;
+
+            octx.fillStyle = 'white';
+            octx.textAlign = 'center';
+            octx.textBaseline = 'middle';
+            
+            const displayText = inputText === "" ? "|" : inputText;
+            
+            // Auto-Scaling Font Logic
+            let fontSize = Math.min(130, Math.floor(width * 0.15)); // Start large, respect mobile screens
+            octx.font = `bold ${fontSize}px "Courier New", Courier, monospace, "Segoe UI Emoji", "Apple Color Emoji"`;
+            
+            let maxWidth = width * 0.90; // Use 90% of screen width to avoid edge-cutting
+            let textWidth = octx.measureText(displayText).width;
+
+            // Dynamically shrink the text if it's too wide
+            if (textWidth > maxWidth) {
+                let scaleRatio = maxWidth / textWidth;
+                fontSize = Math.max(30, Math.floor(fontSize * scaleRatio)); // Minimum 30px
+                octx.font = `bold ${fontSize}px "Courier New", Courier, monospace, "Segoe UI Emoji", "Apple Color Emoji"`;
+            }
+
+            // Word-Wrapping Logic for long sentences
+            let words = displayText.split(' ');
+            let line = '';
+            let lines = [];
+
+            for (let n = 0; n < words.length; n++) {
+                let testLine = line + words[n] + ' ';
+                let metrics = octx.measureText(testLine);
+                if (metrics.width > maxWidth && n > 0) {
+                    lines.push(line);
+                    line = words[n] + ' ';
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push(line);
+
+            // Draw multi-line centered text
+            let lineHeight = fontSize * 1.3;
+            let startY = (height / 2) - ((lines.length - 1) * lineHeight) / 2;
+
+            for (let i = 0; i < lines.length; i++) {
+                octx.fillText(lines[i].trim(), width / 2, startY + (i * lineHeight));
+            }
+
+            const data = octx.getImageData(0, 0, width, height).data;
+            let textPixels = [];
+
+            const density = 4;
+            for (let y = 0; y < height; y += density) {
+                for (let x = 0; x < width; x += density) {
+                    const index = (y * width + x) * 4;
+                    if (data[index + 3] > 128) {
+                        textPixels.push({x, y});
+                    }
+                }
+            }
+
+            textPixels.sort(() => Math.random() - 0.5);
+
+            for (let i = 0; i < TOTAL_PARTICLES; i++) {
+                if (i < textPixels.length) {
+                    particles[i].isText = true;
+                    particles[i].targetX = textPixels[i].x;
+                    particles[i].targetY = textPixels[i].y;
+                    particles[i].color = currentColor;
+                } else {
+                    particles[i].isText = false;
+                }
+            }
+            return currentColor;
+        }
+
+        let activeColor = `hsl(${hue}, 100%, 65%)`;
+
+        input.addEventListener('input', (e) => {
+            text = e.target.value;
+            activeColor = updateTextPixels(text);
+        });
+
+        function animate() {
+            ctx.fillStyle = 'rgba(15, 16, 19, 0.35)'; 
+            ctx.fillRect(0, 0, width, height);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw(ctx, activeColor);
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            
+            particles.forEach(p => {
+                p.baseX = Math.random() * width;
+            });
+            activeColor = updateTextPixels(input.value);
+        });
+
+        activeColor = updateTextPixels("");
+        animate();
+    </script>
+</body>
+</html>

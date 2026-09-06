@@ -1,0 +1,2200 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Voice Pixel Morph - Smooth Edition</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+
+            background: #000;
+
+            font-family:
+                "Segoe UI",
+                Tahoma,
+                Geneva,
+                Verdana,
+                sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+
+        /* ==========================================
+           CONTROL BAR
+        ========================================== */
+
+        #ui-container {
+            position: absolute;
+
+            left: 50%;
+            bottom: 28px;
+
+            transform: translateX(-50%);
+
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 12px 16px;
+
+            background:
+                rgba(15, 15, 15, 0.94);
+
+            border:
+                1px solid rgba(255, 255, 255, 0.12);
+
+            border-radius: 30px;
+
+            box-shadow:
+                0 0 25px rgba(0, 0, 0, 0.9);
+
+            z-index: 10;
+        }
+
+
+        /* ==========================================
+           SEARCH BAR
+        ========================================== */
+
+        #search-wrapper {
+            width: 330px;
+
+            display: flex;
+            align-items: center;
+
+            background:
+                rgba(255, 255, 255, 0.04);
+
+            border:
+                1px solid #444;
+
+            border-radius: 25px;
+
+            padding:
+                3px 5px 3px 12px;
+
+            transition: 0.25s;
+        }
+
+        #search-wrapper:focus-within {
+            border-color: #ff4d4d;
+
+            box-shadow:
+                0 0 15px rgba(255, 77, 77, 0.25);
+        }
+
+
+        #textInput {
+            flex: 1;
+
+            min-width: 0;
+
+            border: none;
+            outline: none;
+
+            background: transparent;
+
+            color: white;
+
+            font-size: 17px;
+
+            padding: 9px 5px;
+        }
+
+        #textInput::placeholder {
+            color: #888;
+        }
+
+
+        /* ==========================================
+           MICROPHONE
+        ========================================== */
+
+        #micButton {
+            width: 42px;
+            height: 42px;
+
+            border: none;
+
+            border-radius: 50%;
+
+            background: #222;
+
+            color: white;
+
+            font-size: 20px;
+
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            transition:
+                transform 0.2s,
+                background 0.2s;
+        }
+
+        #micButton:hover {
+            background: #333;
+
+            transform: scale(1.05);
+        }
+
+        #micButton.listening {
+            background: #e53935;
+
+            box-shadow:
+                0 0 0 5px rgba(229, 57, 53, 0.15),
+                0 0 25px rgba(229, 57, 53, 0.7);
+
+            animation:
+                microphonePulse 1s infinite;
+        }
+
+        @keyframes microphonePulse {
+
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.12);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+
+        /* ==========================================
+           BUTTONS
+        ========================================== */
+
+        .btn-wrapper {
+            position: relative;
+
+            overflow: hidden;
+
+            display: inline-block;
+
+            cursor: pointer;
+
+            flex-shrink: 0;
+        }
+
+        .btn-wrapper span {
+            display: inline-block;
+
+            padding: 9px 13px;
+
+            background: #222;
+
+            color: white;
+
+            border:
+                1px solid #444;
+
+            border-radius: 18px;
+
+            font-size: 13px;
+
+            white-space: nowrap;
+
+            transition: 0.2s;
+        }
+
+        .btn-wrapper:hover span {
+            background: #444;
+        }
+
+        .btn-wrapper input[type="file"] {
+            position: absolute;
+
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            opacity: 0;
+
+            cursor: pointer;
+        }
+
+
+        /* ==========================================
+           COLOR
+        ========================================== */
+
+        #colorInput {
+            -webkit-appearance: none;
+
+            width: 38px;
+            height: 38px;
+
+            border: none;
+
+            background: transparent;
+
+            border-radius: 50%;
+
+            cursor: pointer;
+
+            flex-shrink: 0;
+        }
+
+        #colorInput::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        #colorInput::-webkit-color-swatch {
+            border:
+                2px solid white;
+
+            border-radius: 50%;
+        }
+
+
+        /* ==========================================
+           REPEAT
+        ========================================== */
+
+        #repeatSelect {
+            height: 38px;
+
+            padding:
+                0 9px;
+
+            border:
+                1px solid #444;
+
+            border-radius: 18px;
+
+            background: #222;
+
+            color: white;
+
+            outline: none;
+
+            cursor: pointer;
+        }
+
+
+        /* ==========================================
+           STOP SPEECH
+        ========================================== */
+
+        #stopSpeech {
+            width: 38px;
+            height: 38px;
+
+            border:
+                1px solid #444;
+
+            border-radius: 50%;
+
+            background: #222;
+
+            color: white;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        #stopSpeech:hover {
+            background: #444;
+        }
+
+
+        /* ==========================================
+           STATUS
+        ========================================== */
+
+        #status {
+            position: absolute;
+
+            top: 25px;
+            left: 50%;
+
+            transform:
+                translateX(-50%);
+
+            padding:
+                7px 15px;
+
+            background:
+                rgba(0, 0, 0, 0.65);
+
+            color: #aaa;
+
+            border-radius: 20px;
+
+            font-size: 13px;
+
+            opacity: 0;
+
+            pointer-events: none;
+
+            transition: opacity 0.25s;
+
+            z-index: 20;
+        }
+
+        #status.show {
+            opacity: 1;
+        }
+
+
+        /* ==========================================
+           MOBILE
+        ========================================== */
+
+        @media (max-width: 850px) {
+
+            #ui-container {
+                width:
+                    calc(100% - 20px);
+
+                flex-wrap: wrap;
+
+                justify-content: center;
+
+                bottom: 12px;
+
+                padding: 9px;
+
+                border-radius: 24px;
+            }
+
+            #search-wrapper {
+                width: 100%;
+
+                order: -1;
+            }
+        }
+
+
+        @media (max-width: 500px) {
+
+            #ui-container {
+                gap: 6px;
+            }
+
+            .btn-wrapper span {
+                font-size: 11px;
+
+                padding:
+                    8px 9px;
+            }
+
+            #repeatSelect {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <div id="status"></div>
+
+
+    <!-- ==========================================
+         UI
+    ========================================== -->
+
+    <div id="ui-container">
+
+        <!-- IMAGE -->
+        <label class="btn-wrapper">
+
+            <span>
+                🖼️ Image
+            </span>
+
+            <input
+                type="file"
+                id="imageInput"
+                accept="image/*"
+            >
+
+        </label>
+
+
+        <!-- SEARCH + MIC -->
+        <div id="search-wrapper">
+
+            <input
+                type="text"
+                id="textInput"
+                placeholder="Type a name or speak..."
+                autocomplete="off"
+                spellcheck="false"
+            >
+
+            <button
+                id="micButton"
+                type="button"
+                title="Speak"
+            >
+                🎤
+            </button>
+
+        </div>
+
+
+        <!-- SONG -->
+        <label class="btn-wrapper">
+
+            <span>
+                🎵 Song
+            </span>
+
+            <input
+                type="file"
+                id="audioInput"
+                accept="audio/*"
+            >
+
+        </label>
+
+
+        <!-- COLOR -->
+        <input
+            type="color"
+            id="colorInput"
+            value="#ff4d4d"
+            title="Choose Text Color"
+        >
+
+
+        <!-- REPEAT -->
+        <select
+            id="repeatSelect"
+            title="Speech repetitions"
+        >
+            <option value="1">
+                🔊 ×1
+            </option>
+
+            <option value="2">
+                🔊 ×2
+            </option>
+
+            <option value="3" selected>
+                🔊 ×3
+            </option>
+
+            <option value="4">
+                🔊 ×4
+            </option>
+
+            <option value="5">
+                🔊 ×5
+            </option>
+
+            <option value="6">
+                🔊 ×6
+            </option>
+        </select>
+
+
+        <!-- STOP -->
+        <button
+            id="stopSpeech"
+            type="button"
+            title="Stop speech"
+        >
+            ⏹️
+        </button>
+
+    </div>
+
+
+    <audio
+        id="audioPlayer"
+        loop
+    ></audio>
+
+
+    <script>
+
+        /* =====================================================
+           CANVAS
+        ===================================================== */
+
+        const canvas =
+            document.getElementById("canvas");
+
+        const ctx =
+            canvas.getContext("2d", {
+                alpha: true
+            });
+
+
+        const offCanvas =
+            document.createElement("canvas");
+
+        const offCtx =
+            offCanvas.getContext("2d", {
+                willReadFrequently: true
+            });
+
+
+        /* =====================================================
+           GLOBAL SETTINGS
+        ===================================================== */
+
+        let width = 0;
+        let height = 0;
+
+        let particles = [];
+
+        let customColor =
+            "#ff4d4d";
+
+
+        /*
+            IMPORTANT PERFORMANCE SETTINGS
+
+            Text uses a smaller gap.
+
+            Images automatically use a larger gap.
+        */
+
+        const TEXT_GAP = 3;
+
+        const IMAGE_GAP = 6;
+
+
+        /*
+            Maximum image particles.
+
+            This prevents huge photos from creating
+            100,000+ particles.
+        */
+
+        const MAX_IMAGE_PARTICLES = 22000;
+
+
+        /*
+            Maximum text particles.
+
+            Names and emojis stay detailed.
+        */
+
+        const MAX_TEXT_PARTICLES = 18000;
+
+
+        /*
+            Particle size.
+        */
+
+        const particleSize = 3;
+
+
+        /*
+            Mouse interaction radius.
+        */
+
+        const MOUSE_RADIUS = 110;
+
+
+        let mouse = {
+
+            x: -1000,
+
+            y: -1000
+
+        };
+
+
+        let currentMode =
+            "text";
+
+
+        let currentText =
+            "❤️";
+
+
+        let currentImgObj =
+            null;
+
+
+        /* =====================================================
+           DOM
+        ===================================================== */
+
+        const textInput =
+            document.getElementById(
+                "textInput"
+            );
+
+
+        const colorInput =
+            document.getElementById(
+                "colorInput"
+            );
+
+
+        const imageInput =
+            document.getElementById(
+                "imageInput"
+            );
+
+
+        const audioInput =
+            document.getElementById(
+                "audioInput"
+            );
+
+
+        const audioPlayer =
+            document.getElementById(
+                "audioPlayer"
+            );
+
+
+        const micButton =
+            document.getElementById(
+                "micButton"
+            );
+
+
+        const repeatSelect =
+            document.getElementById(
+                "repeatSelect"
+            );
+
+
+        const stopSpeech =
+            document.getElementById(
+                "stopSpeech"
+            );
+
+
+        const status =
+            document.getElementById(
+                "status"
+            );
+
+
+        /* =====================================================
+           STATUS
+        ===================================================== */
+
+        let statusTimer = null;
+
+
+        function showStatus(message) {
+
+            status.textContent =
+                message;
+
+            status.classList.add(
+                "show"
+            );
+
+
+            clearTimeout(
+                statusTimer
+            );
+
+
+            statusTimer =
+                setTimeout(() => {
+
+                    status.classList.remove(
+                        "show"
+                    );
+
+                }, 2500);
+        }
+
+
+        /* =====================================================
+           RESIZE
+        ===================================================== */
+
+        function initCanvas() {
+
+            width =
+                window.innerWidth;
+
+            height =
+                window.innerHeight;
+
+
+            canvas.width =
+                width;
+
+            canvas.height =
+                height;
+
+
+            offCanvas.width =
+                width;
+
+            offCanvas.height =
+                height;
+
+
+            refreshCurrentState();
+        }
+
+
+        window.addEventListener(
+            "resize",
+            initCanvas
+        );
+
+
+        /* =====================================================
+           PARTICLE
+        ===================================================== */
+
+        class Particle {
+
+            constructor(
+                x,
+                y,
+                color
+            ) {
+
+                /*
+                    Start particles from
+                    the center instead of
+                    random screen positions.
+
+                    This gives a controlled
+                    image formation animation.
+                */
+
+                this.x =
+                    width / 2 +
+                    (Math.random() - 0.5) *
+                    100;
+
+                this.y =
+                    height / 2 +
+                    (Math.random() - 0.5) *
+                    100;
+
+
+                this.destX = x;
+
+                this.destY = y;
+
+
+                this.vx = 0;
+
+                this.vy = 0;
+
+
+                this.color =
+                    color;
+            }
+
+
+            update() {
+
+                /*
+                    Spring
+                */
+
+                const dx =
+                    this.destX -
+                    this.x;
+
+                const dy =
+                    this.destY -
+                    this.y;
+
+
+                this.vx +=
+                    dx * 0.075;
+
+                this.vy +=
+                    dy * 0.075;
+
+
+                /*
+                    Mouse interaction.
+
+                    IMPORTANT:
+                    We use squared distance.
+
+                    No Math.sqrt().
+                */
+
+                const mdx =
+                    mouse.x -
+                    this.x;
+
+                const mdy =
+                    mouse.y -
+                    this.y;
+
+
+                const distanceSquared =
+                    mdx * mdx +
+                    mdy * mdy;
+
+
+                const radiusSquared =
+                    MOUSE_RADIUS *
+                    MOUSE_RADIUS;
+
+
+                if (
+                    distanceSquared <
+                    radiusSquared
+                ) {
+
+                    /*
+                        Only calculate angle
+                        when particle is actually
+                        inside mouse radius.
+                    */
+
+                    const distance =
+                        Math.sqrt(
+                            distanceSquared
+                        );
+
+
+                    if (distance > 0.1) {
+
+                        const force =
+                            (
+                                MOUSE_RADIUS -
+                                distance
+                            ) /
+                            MOUSE_RADIUS;
+
+
+                        const angle =
+                            Math.atan2(
+                                mdy,
+                                mdx
+                            );
+
+
+                        this.vx -=
+                            Math.cos(angle) *
+                            force *
+                            11;
+
+
+                        this.vy -=
+                            Math.sin(angle) *
+                            force *
+                            11;
+                    }
+                }
+
+
+                /*
+                    Friction
+                */
+
+                this.vx *=
+                    0.82;
+
+                this.vy *=
+                    0.82;
+
+
+                /*
+                    Position
+                */
+
+                this.x +=
+                    this.vx;
+
+                this.y +=
+                    this.vy;
+            }
+
+
+            draw() {
+
+                ctx.fillStyle =
+                    this.color;
+
+
+                ctx.fillRect(
+                    this.x,
+                    this.y,
+                    particleSize,
+                    particleSize
+                );
+            }
+        }
+
+
+        /* =====================================================
+           CREATE PARTICLES
+        ===================================================== */
+
+        function applyTargets(
+            targets,
+            maxParticles
+        ) {
+
+            /*
+                If there are too many pixels,
+                sample them instead of creating
+                every single pixel.
+            */
+
+            let finalTargets =
+                targets;
+
+
+            if (
+                finalTargets.length >
+                maxParticles
+            ) {
+
+                const step =
+                    finalTargets.length /
+                    maxParticles;
+
+
+                const sampled = [];
+
+
+                for (
+                    let i = 0;
+                    i < maxParticles;
+                    i++
+                ) {
+
+                    sampled.push(
+                        finalTargets[
+                            Math.floor(
+                                i * step
+                            )
+                        ]
+                    );
+                }
+
+
+                finalTargets =
+                    sampled;
+            }
+
+
+            /*
+                Add only the particles we need.
+            */
+
+            while (
+                particles.length <
+                finalTargets.length
+            ) {
+
+                const target =
+                    finalTargets[
+                        particles.length
+                    ];
+
+
+                particles.push(
+                    new Particle(
+                        target.x,
+                        target.y,
+                        target.color
+                    )
+                );
+            }
+
+
+            /*
+                Remove extra particles.
+            */
+
+            if (
+                particles.length >
+                finalTargets.length
+            ) {
+
+                particles.length =
+                    finalTargets.length;
+            }
+
+
+            /*
+                DIRECT assignment.
+
+                NO random sorting.
+
+                This removes a large amount
+                of CPU work.
+            */
+
+            for (
+                let i = 0;
+                i < finalTargets.length;
+                i++
+            ) {
+
+                const target =
+                    finalTargets[i];
+
+
+                particles[i].destX =
+                    target.x;
+
+                particles[i].destY =
+                    target.y;
+
+                particles[i].color =
+                    target.color;
+            }
+        }
+
+
+        /* =====================================================
+           GET PIXELS
+        ===================================================== */
+
+        function getPixels(
+            gap,
+            maxParticles
+        ) {
+
+            const imageData =
+                offCtx.getImageData(
+                    0,
+                    0,
+                    width,
+                    height
+                );
+
+
+            const data =
+                imageData.data;
+
+
+            const targets = [];
+
+
+            for (
+                let y = 0;
+                y < height;
+                y += gap
+            ) {
+
+                for (
+                    let x = 0;
+                    x < width;
+                    x += gap
+                ) {
+
+                    const index =
+                        (
+                            y * width +
+                            x
+                        ) * 4;
+
+
+                    const alpha =
+                        data[index + 3];
+
+
+                    if (
+                        alpha > 50
+                    ) {
+
+                        const r =
+                            data[index];
+
+                        const g =
+                            data[index + 1];
+
+                        const b =
+                            data[index + 2];
+
+
+                        targets.push({
+
+                            x: x,
+
+                            y: y,
+
+                            color:
+                                `rgba(
+                                    ${r},
+                                    ${g},
+                                    ${b},
+                                    ${alpha / 255}
+                                )`
+                        });
+                    }
+                }
+            }
+
+
+            applyTargets(
+                targets,
+                maxParticles
+            );
+        }
+
+
+        /* =====================================================
+           TEXT
+        ===================================================== */
+
+        function updateTargetsFromText(
+            text
+        ) {
+
+            currentMode =
+                "text";
+
+
+            currentText =
+                text;
+
+
+            offCtx.clearRect(
+                0,
+                0,
+                width,
+                height
+            );
+
+
+            if (
+                text === ""
+            ) {
+
+                text =
+                    "❤️";
+            }
+
+
+            offCtx.fillStyle =
+                customColor;
+
+
+            offCtx.textAlign =
+                "center";
+
+
+            offCtx.textBaseline =
+                "middle";
+
+
+            const characters =
+                [...text].length;
+
+
+            /*
+                Responsive text size.
+            */
+
+            let fontSize;
+
+
+            if (
+                characters <= 2
+            ) {
+
+                fontSize =
+                    Math.min(
+                        width,
+                        height
+                    ) * 0.48;
+            }
+
+            else if (
+                characters <= 8
+            ) {
+
+                fontSize =
+                    Math.min(
+                        width,
+                        height
+                    ) * 0.27;
+            }
+
+            else if (
+                characters <= 16
+            ) {
+
+                fontSize =
+                    Math.min(
+                        width,
+                        height
+                    ) * 0.18;
+            }
+
+            else {
+
+                fontSize =
+                    Math.min(
+                        width,
+                        height
+                    ) * 0.11;
+            }
+
+
+            /*
+                Prevent extremely wide text.
+            */
+
+            offCtx.font =
+                `bold ${fontSize}px Arial`;
+
+
+            let measured =
+                offCtx.measureText(
+                    text
+                );
+
+
+            /*
+                Scale down if text is
+                wider than 85% of screen.
+            */
+
+            if (
+                measured.width >
+                width * 0.85
+            ) {
+
+                fontSize *=
+                    (
+                        width * 0.85
+                    ) /
+                    measured.width;
+
+
+                offCtx.font =
+                    `bold ${fontSize}px Arial`;
+            }
+
+
+            offCtx.fillText(
+                text,
+                width / 2,
+                height / 2
+            );
+
+
+            getPixels(
+                TEXT_GAP,
+                MAX_TEXT_PARTICLES
+            );
+        }
+
+
+        /* =====================================================
+           IMAGE
+        ===================================================== */
+
+        function updateTargetsFromImage(
+            img
+        ) {
+
+            currentMode =
+                "image";
+
+
+            currentImgObj =
+                img;
+
+
+            offCtx.clearRect(
+                0,
+                0,
+                width,
+                height
+            );
+
+
+            /*
+                Keep image inside screen.
+            */
+
+            const scale =
+                Math.min(
+                    (width * 0.88) /
+                        img.width,
+
+                    (height * 0.78) /
+                        img.height
+                );
+
+
+            const imgW =
+                img.width *
+                scale;
+
+
+            const imgH =
+                img.height *
+                scale;
+
+
+            const dx =
+                (
+                    width -
+                    imgW
+                ) / 2;
+
+
+            const dy =
+                (
+                    height -
+                    imgH
+                ) / 2;
+
+
+            /*
+                Draw image once to
+                off-screen canvas.
+            */
+
+            offCtx.drawImage(
+                img,
+                dx,
+                dy,
+                imgW,
+                imgH
+            );
+
+
+            /*
+                IMPORTANT PERFORMANCE FIX.
+
+                Instead of every 3 pixels,
+                image uses gap 6.
+
+                This dramatically reduces
+                particle count.
+            */
+
+            getPixels(
+                IMAGE_GAP,
+                MAX_IMAGE_PARTICLES
+            );
+
+
+            showStatus(
+                `🖼️ Image loaded smoothly`
+            );
+        }
+
+
+        function refreshCurrentState() {
+
+            if (
+                currentMode ===
+                "text"
+            ) {
+
+                updateTargetsFromText(
+                    currentText
+                );
+            }
+
+
+            else if (
+                currentMode ===
+                "image" &&
+                currentImgObj
+            ) {
+
+                updateTargetsFromImage(
+                    currentImgObj
+                );
+            }
+        }
+
+
+        /* =====================================================
+           TEXT INPUT
+        ===================================================== */
+
+        textInput.addEventListener(
+            "input",
+            function(event) {
+
+                updateTargetsFromText(
+                    event.target.value
+                );
+            }
+        );
+
+
+        /* =====================================================
+           COLOR
+        ===================================================== */
+
+        colorInput.addEventListener(
+            "input",
+            function(event) {
+
+                customColor =
+                    event.target.value;
+
+
+                if (
+                    currentMode ===
+                    "text"
+                ) {
+
+                    updateTargetsFromText(
+                        currentText
+                    );
+                }
+            }
+        );
+
+
+      
+
+        imageInput.addEventListener(
+            "change",
+            function(event) {
+
+                const file =
+                    event.target.files[0];
+
+
+                if (!file) {
+                    return;
+                }
+
+
+                const reader =
+                    new FileReader();
+
+
+                reader.onload =
+                    function(event) {
+
+                        const img =
+                            new Image();
+
+
+                        img.onload =
+                            function() {
+
+                                textInput.value =
+                                    "";
+
+
+                                updateTargetsFromImage(
+                                    img
+                                );
+                            };
+
+
+                        img.src =
+                            event.target.result;
+                    };
+
+
+                reader.readAsDataURL(
+                    file
+                );
+            }
+        );
+
+
+
+
+        audioInput.addEventListener(
+            "change",
+            function(event) {
+
+                const file =
+                    event.target.files[0];
+
+
+                if (!file) {
+                    return;
+                }
+
+
+                const audioURL =
+                    URL.createObjectURL(
+                        file
+                    );
+
+
+                audioPlayer.src =
+                    audioURL;
+
+
+                audioPlayer.play()
+                    .then(() => {
+
+                        showStatus(
+                            "🎵 Song playing"
+                        );
+
+                    })
+                    .catch(() => {
+
+                        showStatus(
+                            "Click the page to start audio"
+                        );
+                    });
+            }
+        );
+
+
+
+        const voiceSymbols = {
+
+            "heart": "❤️",
+            "love": "❤️",
+            "love heart": "❤️",
+
+            "broken heart": "💔",
+
+            "kiss": "💋",
+
+            "smile": "😊",
+            "happy": "😊",
+
+            "laugh": "😂",
+            "laughing": "😂",
+
+            "cry": "😭",
+            "crying": "😭",
+
+            "sad": "😢",
+
+            "angry": "😡",
+
+            "fire": "🔥",
+
+            "star": "⭐",
+            "stars": "✨",
+
+            "cat": "🐱",
+
+            "dog": "🐶",
+
+            "rose": "🌹",
+
+            "flower": "🌸",
+
+            "sun": "☀️",
+
+            "moon": "🌙",
+
+            "earth": "🌍",
+            "world": "🌍",
+
+            "check": "✅",
+            "tick": "✅",
+
+            "cross": "❌",
+
+            "thumbs up": "👍",
+            "like": "👍",
+
+            "clap": "👏",
+
+            "cool": "😎",
+
+            "rocket": "🚀",
+
+            "crown": "👑",
+
+            "king": "👑",
+
+            "queen": "👑",
+
+            "party": "🎉",
+
+            "music": "🎵",
+
+            "microphone": "🎤",
+            "mic": "🎤"
+               
+            
+
+        };
+
+
+        function normalizeVoiceText(
+            text
+        ) {
+
+            return text
+                .toLowerCase()
+                .trim()
+                .replace(
+                    /[.!?,]/g,
+                    ""
+                )
+                .replace(
+                    /\s+/g,
+                    " "
+                );
+        }
+
+
+        function convertVoiceToDisplayText(
+            text
+        ) {
+
+            const normalized =
+                normalizeVoiceText(
+                    text
+                );
+
+
+            /*
+                Exact match first.
+            */
+
+            if (
+                voiceSymbols[
+                    normalized
+                ]
+            ) {
+
+                return voiceSymbols[
+                    normalized
+                ];
+            }
+
+
+            /*
+                Phrase match.
+            */
+
+            const keys =
+                Object.keys(
+                    voiceSymbols
+                ).sort(
+                    (a, b) =>
+                        b.length -
+                        a.length
+                );
+
+
+            for (
+                const key of keys
+            ) {
+
+                if (
+                    normalized.includes(
+                        key
+                    )
+                ) {
+
+                    return voiceSymbols[
+                        key
+                    ];
+                }
+            }
+
+
+            /*
+                Normal spoken name.
+            */
+
+            return text.trim();
+        }
+
+
+        /* =====================================================
+           SPEECH RECOGNITION
+        ===================================================== */
+
+        const SpeechRecognition =
+            window.SpeechRecognition ||
+            window.webkitSpeechRecognition;
+
+
+        let recognition =
+            null;
+
+
+        let isListening =
+            false;
+
+
+        if (
+            SpeechRecognition
+        ) {
+
+            recognition =
+                new SpeechRecognition();
+
+
+            recognition.continuous =
+                false;
+
+
+            recognition.interimResults =
+                false;
+
+
+            recognition.maxAlternatives =
+                1;
+
+
+            recognition.lang =
+                "en-US";
+
+
+            recognition.onstart =
+                function() {
+
+                    isListening =
+                        true;
+
+
+                    micButton.classList.add(
+                        "listening"
+                    );
+
+
+                    micButton.textContent =
+                        "🔴";
+
+
+                    showStatus(
+                        "🎤 Listening..."
+                    );
+                };
+
+
+            recognition.onresult =
+                function(event) {
+
+                    const spoken =
+                        event
+                            .results[0][0]
+                            .transcript
+                            .trim();
+
+
+                    if (!spoken) {
+                        return;
+                    }
+
+
+                    /*
+                        Convert speech
+                        to text/emoji.
+                    */
+
+                    const display =
+                        convertVoiceToDisplayText(
+                            spoken
+                        );
+
+
+                    /*
+                        Put result
+                        in search bar.
+                    */
+
+                    textInput.value =
+                        display;
+
+
+                    /*
+                        Create pixels.
+                    */
+
+                    updateTargetsFromText(
+                        display
+                    );
+
+
+                    showStatus(
+                        `✨ ${spoken}`
+                    );
+
+
+                    /*
+                        Speak original
+                        spoken words.
+                    */
+
+                    speakRepeatedly(
+                        spoken
+                    );
+                };
+
+
+            recognition.onerror =
+                function(event) {
+
+                    isListening =
+                        false;
+
+
+                    micButton.classList.remove(
+                        "listening"
+                    );
+
+
+                    micButton.textContent =
+                        "🎤";
+
+
+                    if (
+                        event.error ===
+                        "not-allowed"
+                    ) {
+
+                        showStatus(
+                            "🎤 Microphone permission denied"
+                        );
+                    }
+
+                    else if (
+                        event.error ===
+                        "no-speech"
+                    ) {
+
+                        showStatus(
+                            "🎤 No speech detected"
+                        );
+                    }
+
+                    else {
+
+                        showStatus(
+                            "🎤 Microphone error"
+                        );
+                    }
+                };
+
+
+            recognition.onend =
+                function() {
+
+                    isListening =
+                        false;
+
+
+                    micButton.classList.remove(
+                        "listening"
+                    );
+
+
+                    micButton.textContent =
+                        "🎤";
+                };
+        }
+
+
+        else {
+
+            micButton.disabled =
+                true;
+
+
+            micButton.style.opacity =
+                "0.4";
+
+
+            micButton.title =
+                "Speech recognition not supported";
+
+            showStatus(
+                "⚠️ Voice recognition is not supported"
+            );
+        }
+
+
+     
+
+        micButton.addEventListener(
+            "click",
+            function() {
+
+                if (
+                    !recognition
+                ) {
+
+                    showStatus(
+                        "⚠️ Browser does not support voice recognition"
+                    );
+
+                    return;
+                }
+
+
+                if (
+                    isListening
+                ) {
+
+                    recognition.stop();
+
+                    return;
+                }
+
+
+                /*
+                    Stop existing speech.
+                */
+
+                window.speechSynthesis.cancel();
+
+
+                try {
+
+                    recognition.start();
+
+                }
+
+                catch (error) {
+
+                    showStatus(
+                        "🎤 Microphone is already active"
+                    );
+                }
+            }
+        );
+
+
+       
+
+        function speakRepeatedly(
+            text
+        ) {
+
+            if (
+                !(
+                    "speechSynthesis"
+                    in window
+                )
+            ) {
+
+                showStatus(
+                    "⚠️ Text-to-speech unavailable"
+                );
+
+                return;
+            }
+
+
+            /*
+                Stop previous voice.
+            */
+
+            window.speechSynthesis.cancel();
+
+
+            const repeatCount =
+                Number(
+                    repeatSelect.value
+                );
+
+
+            let count = 0;
+
+
+            function speakNext() {
+
+                if (
+                    count >=
+                    repeatCount
+                ) {
+
+                    return;
+                }
+
+
+                count++;
+
+
+                const utterance =
+                    new SpeechSynthesisUtterance(
+                        text
+                    );
+
+
+                utterance.lang =
+                    "en-US";
+
+
+                utterance.rate =
+                    0.9;
+
+
+                utterance.pitch =
+                    1;
+
+
+                utterance.onend =
+                    function() {
+
+                        setTimeout(
+                            speakNext,
+                            120
+                        );
+                    };
+
+
+                window.speechSynthesis.speak(
+                    utterance
+                );
+            }
+
+
+            speakNext();
+        }
+
+
+
+        stopSpeech.addEventListener(
+            "click",
+            function() {
+
+                window.speechSynthesis.cancel();
+
+                showStatus(
+                    "⏹️ Speech stopped"
+                );
+            }
+        );
+
+
+
+        window.addEventListener(
+            "mousemove",
+            function(event) {
+
+                mouse.x =
+                    event.clientX;
+
+                mouse.y =
+                    event.clientY;
+            }
+        );
+
+
+
+        window.addEventListener(
+            "touchmove",
+            function(event) {
+
+                if (
+                    event.touches.length
+                    > 0
+                ) {
+
+                    mouse.x =
+                        event.touches[0]
+                            .clientX;
+
+                    mouse.y =
+                        event.touches[0]
+                            .clientY;
+                }
+
+            },
+            {
+                passive: true
+            }
+        );
+
+
+        window.addEventListener(
+            "mouseleave",
+            function() {
+
+                mouse.x =
+                    -1000;
+
+                mouse.y =
+                    -1000;
+            }
+        );
+
+
+        window.addEventListener(
+            "touchend",
+            function() {
+
+                mouse.x =
+                    -1000;
+
+                mouse.y =
+                    -1000;
+            }
+        );
+
+
+
+        function animate() {
+
+            ctx.clearRect(
+                0,
+                0,
+                width,
+                height
+            );
+
+
+            for (
+                let i = 0;
+                i < particles.length;
+                i++
+            ) {
+
+                particles[i].update();
+
+                particles[i].draw();
+            }
+
+
+            requestAnimationFrame(
+                animate
+            );
+        }
+
+
+
+        initCanvas();
+
+        animate();
+
+    </script>
+
+</body>
+</html>
+```
