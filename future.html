@@ -30,28 +30,28 @@
             z-index: 1;
         }
         
-        /* SHRUNKEN UI BOX */
+        /* SUPER SHRUNKEN UI BOX */
         #ui { 
             position: absolute; 
-            top: 16px; 
-            left: 16px; 
+            top: 12px; 
+            left: 12px; 
             color: #fff; 
             z-index: 10; 
             background: rgba(12, 15, 22, 0.75);
-            padding: 12px 14px; /* Reduced padding */
-            border-radius: 10px; /* Reduced border radius */
+            padding: 8px 10px; /* Further reduced padding */
+            border-radius: 8px; /* Further reduced border radius */
             border: 1px solid rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 10px 24px rgba(0,0,0,0.8);
-            max-width: 240px; /* Reduced width */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.8);
+            max-width: 170px; /* Further reduced width */
             pointer-events: auto;
         }
         
         h1 { 
-            margin-bottom: 8px; 
-            font-size: 0.8rem; /* Smaller title */
-            letter-spacing: 1px; 
+            margin-bottom: 6px; 
+            font-size: 0.65rem; /* Tiny title */
+            letter-spacing: 0.5px; 
             text-transform: uppercase; 
             font-weight: 700;
             color: #fff;
@@ -60,56 +60,57 @@
         .status-box {
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            margin-bottom: 10px;
+            gap: 4px;
+            margin-bottom: 8px;
             background: rgba(0, 0, 0, 0.35);
-            padding: 8px 10px;
-            border-radius: 6px;
+            padding: 6px 8px;
+            border-radius: 5px;
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .status-line {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 0.68rem; /* Smaller status text */
+            gap: 5px;
+            font-size: 0.55rem; /* Tiny status text */
             font-weight: 600;
         }
 
         .dot {
-            width: 6px; /* Smaller indicator dot */
-            height: 6px;
+            width: 5px; /* Tiny indicator dot */
+            height: 5px;
             border-radius: 50%;
             background: #ffaa00;
-            box-shadow: 0 0 6px #ffaa00;
+            box-shadow: 0 0 4px #ffaa00;
             flex-shrink: 0;
             transition: background-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         #voice-speech-feed {
-            font-size: 0.65rem; /* Smaller speech text */
+            font-size: 0.5rem; /* Tiny speech text */
             color: #00ffcc;
             font-style: italic;
-            min-height: 14px;
+            min-height: 12px;
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
+            margin-top: 2px;
         }
         
         ul { 
             list-style: none; 
             padding: 0; 
-            margin: 0 0 10px 0; 
-            font-size: 0.68rem; /* Smaller list items */
+            margin: 0 0 8px 0; 
+            font-size: 0.55rem; /* Tiny list items */
             color: #ccc; 
-            line-height: 1.5; 
+            line-height: 1.4; 
         }
         ul li strong { color: #fff; }
 
         .btn-row {
             display: flex;
-            gap: 6px;
-            margin-bottom: 8px;
+            gap: 4px;
+            margin-bottom: 6px;
         }
 
         .action-btn {
@@ -117,9 +118,9 @@
             background: rgba(255, 255, 255, 0.12);
             border: 1px solid rgba(255, 255, 255, 0.25);
             color: #fff;
-            padding: 5px 8px; /* Smaller button padding */
-            border-radius: 5px;
-            font-size: 0.65rem; /* Smaller button text */
+            padding: 4px 6px; /* Tiny button padding */
+            border-radius: 4px;
+            font-size: 0.55rem; /* Tiny button text */
             font-weight: 600;
             cursor: pointer;
             transition: background 0.2s;
@@ -131,11 +132,11 @@
         .select-row {
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 2px;
         }
         
         label {
-            font-size: 0.55rem;
+            font-size: 0.45rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: #888;
@@ -145,9 +146,9 @@
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: #fff;
-            padding: 4px 6px; /* Smaller dropdown */
-            border-radius: 5px;
-            font-size: 0.7rem;
+            padding: 2px 4px; /* Tiny dropdown */
+            border-radius: 4px;
+            font-size: 0.55rem;
             outline: none;
             cursor: pointer;
         }
@@ -176,6 +177,11 @@
     </style>
 </head>
 <body>
+
+<!-- BACKGROUND AUDIO (Replace YOUR_AUDIO_FILE.mp3 with your actual file name) -->
+<audio id="bg-audio" loop preload="auto">
+    <source src="space.mp3" type="audio/mpeg">
+</audio>
 
 <div id="canvas-container"></div>
 
@@ -219,6 +225,27 @@
 </div>
 
 <script>
+    // -------------------------------------------------------------
+    // 0. AUDIO AUTOPLAY LOGIC
+    // -------------------------------------------------------------
+    const bgAudio = document.getElementById('bg-audio');
+    bgAudio.volume = 0.5; // Adjust volume as needed (0.0 to 1.0)
+    
+    // Attempt to play immediately
+    bgAudio.play().catch(() => {
+        // Browsers block autoplay unless the user interacts. 
+        // This plays the audio the moment they click or move their mouse on the screen.
+        const playOnInteract = () => {
+            bgAudio.play();
+            window.removeEventListener('click', playOnInteract);
+            window.removeEventListener('mousemove', playOnInteract);
+            window.removeEventListener('touchstart', playOnInteract);
+        };
+        window.addEventListener('click', playOnInteract);
+        window.addEventListener('mousemove', playOnInteract);
+        window.addEventListener('touchstart', playOnInteract);
+    });
+
     // -------------------------------------------------------------
     // 1. THREE.JS FAST GPU SCENE SETUP
     // -------------------------------------------------------------
