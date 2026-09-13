@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Interactive Hand, Voice & Mouse 3D Particles</title>
+    
+    <!-- Three.js (r128) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- MediaPipe Hands -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html { 
+            width: 100vw; 
+            height: 100vh; 
+            overflow: hidden; 
+            background-color: #000; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            user-select: none;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        /* SHRUNKEN UI BOX */
+        #ui { 
+            position: absolute; 
+            top: 16px; 
+            left: 16px; 
+            color: #fff; 
+            z-index: 10; 
+            background: rgba(12, 15, 22, 0.75);
+            padding: 12px 14px; /* Reduced padding */
+            border-radius: 10px; /* Reduced border radius */
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.8);
+            max-width: 240px; /* Reduced width */
+            pointer-events: auto;
+        }
+        
+        h1 { 
+            margin-bottom: 8px; 
+            font-size: 0.8rem; /* Smaller title */
+            letter-spacing: 1px; 
+            text-transform: uppercase; 
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .status-box {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .status-line {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.68rem; /* Smaller status text */
+            font-weight: 600;
+        }
+
+        .dot {
+            width: 6px; /* Smaller indicator dot */
+            height: 6px;
+            border-radius: 50%;
+            background: #ffaa00;
+            box-shadow: 0 0 6px #ffaa00;
+            flex-shrink: 0;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #voice-speech-feed {
+            font-size: 0.65rem; /* Smaller speech text */
+            color: #00ffcc;
+            font-style: italic;
+            min-height: 14px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        
+        ul { 
+            list-style: none; 
+            padding: 0; 
+            margin: 0 0 10px 0; 
+            font-size: 0.68rem; /* Smaller list items */
+            color: #ccc; 
+            line-height: 1.5; 
+        }
+        ul li strong { color: #fff; }
+
+        .btn-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .action-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #fff;
+            padding: 5px 8px; /* Smaller button padding */
+            border-radius: 5px;
+            font-size: 0.65rem; /* Smaller button text */
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .select-row {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        
+        label {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+        }
+        
+        select {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 4px 6px; /* Smaller dropdown */
+            border-radius: 5px;
+            font-size: 0.7rem;
+            outline: none;
+            cursor: pointer;
+        }
+        select option { background: #111; color: #fff; }
+        
+        #video-container { 
+            position: absolute; 
+            bottom: 24px; 
+            right: 24px; 
+            width: 190px; 
+            height: 142px; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            border: 1.5px solid rgba(255, 255, 255, 0.25); 
+            z-index: 10; 
+            background: #000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        
+        video { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            transform: scaleX(-1); 
+        }
+    </style>
+</head>
+<body>
+
+<div id="canvas-container"></div>
+
+<div id="ui">
+    <h1>Gesture Particles</h1>
+    
+    <div class="status-box">
+        <div class="status-line">
+            <span class="dot" id="cam-dot"></span>
+            <span id="cam-status">Camera: Connecting...</span>
+        </div>
+        <div class="status-line">
+            <span class="dot" id="mic-dot"></span>
+            <span id="mic-status">AI Voice: Click "Enable"</span>
+        </div>
+        <div id="voice-speech-feed">"Listening for commands..."</div>
+    </div>
+
+    <div class="btn-row">
+        <button class="action-btn" id="voice-toggle-btn">Enable Voice AI</button>
+    </div>
+
+    <ul>
+        <li>• <strong>Mouse:</strong> Hover to scatter</li>
+        <li>• <strong>Hands In/Out:</strong> Scale</li>
+        <li>• <strong>Hand L/R:</strong> Color</li>
+        <li>• <strong>1 Finger / "One":</strong> Fireworks</li>
+        <li>• <strong>2 Fingers / "Two":</strong> Heart</li>
+        <li>• <strong>3 Fingers / "Three":</strong> Saturn</li>
+        <li>• <strong>4-5 Fingers / "Four":</strong> Galaxy</li>
+    </ul>
+
+    <div class="select-row">
+        <label for="camera-select">Webcam Selector:</label>
+        <select id="camera-select"></select>
+    </div>
+</div>
+
+<div id="video-container">
+    <video id="video" autoplay playsinline muted></video>
+</div>
+
+<script>
+    // -------------------------------------------------------------
+    // 1. THREE.JS FAST GPU SCENE SETUP
+    // -------------------------------------------------------------
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 48;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    // -------------------------------------------------------------
+    // 2. MOUSE/TOUCH INTERACTION SETUP
+    // -------------------------------------------------------------
+    const targetMouse = new THREE.Vector2(-999, -999);
+    const currentMouse = new THREE.Vector2(-999, -999);
+
+    function onMouseMove(e) {
+        targetMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        targetMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    }
+    
+    function onTouchMove(e) {
+        if(e.touches.length > 0) {
+            targetMouse.x = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+            targetMouse.y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+        }
+    }
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('touchmove', onTouchMove);
+
+    // -------------------------------------------------------------
+    // 3. 45,000 GPU PARTICLES WITH DIRECT SHADER MORPHING & REPULSION
+    // -------------------------------------------------------------
+    const particleCount = 45000;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const randoms = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount; i++) {
+        positions[i*3] = 0;
+        positions[i*3+1] = 0;
+        positions[i*3+2] = 0;
+
+        randoms[i*3] = Math.random() * 2 - 1;
+        randoms[i*3+1] = Math.random() * 2 - 1;
+        randoms[i*3+2] = Math.random() * 2 - 1;
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 3));
+
+    const material = new THREE.ShaderMaterial({
+        uniforms: {
+            uTime: { value: 0 },
+            uScale: { value: 1.0 },
+            uHue: { value: 0.13 }, 
+            uTemplate: { value: 2.0 }, 
+            uMouse: { value: currentMouse }, 
+            uAspect: { value: window.innerWidth / window.innerHeight } 
+        },
+        vertexShader: `
+            uniform float uTime;
+            uniform float uScale;
+            uniform float uHue;
+            uniform float uTemplate;
+            uniform vec2 uMouse;
+            uniform float uAspect;
+            
+            attribute vec3 aRandom;
+            varying vec3 vColor;
+            
+            #define PI 3.14159265359
+
+            vec3 hsl2rgb(vec3 c) {
+                vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+                return c.z + c.y * (rgb - 0.5) * (1.0 - abs(2.0 * c.z - 1.0));
+            }
+
+            vec3 rotate(vec3 v, vec3 axis, float angle) {
+                vec3 k = normalize(axis);
+                float c = cos(angle);
+                float s = sin(angle);
+                return v * c + cross(k, v) * s + k * dot(k, v) * (1.0 - c);
+            }
+
+            void main() {
+                vec3 finalPos = vec3(0.0);
+                float t = uTime * 0.45;
+
+                // --- SHAPE 0: FIREWORKS ---
+                vec3 dir = normalize(aRandom);
+                float burst = mod(t * 1.5 + length(aRandom) * 0.8, 2.0);
+                vec3 pos0 = dir * (burst * burst) * 26.0;
+
+                // --- SHAPE 1: VOLUMETRIC HEART ---
+                float hPhi = aRandom.x * PI * 2.0;
+                float x1 = 16.0 * pow(sin(hPhi), 3.0);
+                float y1 = 13.0 * cos(hPhi) - 5.0 * cos(2.0*hPhi) - 2.0 * cos(3.0*hPhi) - cos(4.0*hPhi);
+                vec3 pos1 = vec3(x1, y1, aRandom.z * 7.0) * 0.7;
+                pos1 = rotate(pos1, vec3(0.0, 1.0, 0.0), t * 0.8);
+
+                // --- SHAPE 2: SATURN ---
+                float sAngle = aRandom.x * PI * 2.0;
+                bool isRing = aRandom.y > -0.35;
+                float sRad = 14.0 + aRandom.z * 6.0;
+                vec3 pos2 = isRing ? vec3(cos(sAngle) * sRad, aRandom.z * 0.7, sin(sAngle) * sRad) 
+                                   : normalize(aRandom) * 7.2;
+                pos2 = rotate(pos2, vec3(1.0, 0.15, 0.35), 0.48);
+                pos2 = rotate(pos2, vec3(0.0, 1.0, 0.0), t * 0.5);
+
+                // --- SHAPE 3: MORPHING FLOWER ---
+                float fU = aRandom.x * PI * 2.0;
+                float fV = aRandom.y * PI;
+                float fRad = 12.0 + 5.5 * sin(5.0 * fU) * sin(4.0 * fV);
+                vec3 pos3 = vec3(fRad * sin(fV) * cos(fU), fRad * sin(fV) * sin(fU), fRad * cos(fV));
+                pos3 = rotate(pos3, vec3(0.4, 1.0, 0.2), t * 0.4);
+
+                // Smooth morph transition
+                if (uTemplate <= 1.0) {
+                    finalPos = mix(pos0, pos1, smoothstep(0.0, 1.0, uTemplate));
+                } else if (uTemplate <= 2.0) {
+                    finalPos = mix(pos1, pos2, smoothstep(1.0, 2.0, uTemplate));
+                } else {
+                    finalPos = mix(pos2, pos3, smoothstep(2.0, 3.0, uTemplate));
+                }
+
+                finalPos *= uScale;
+
+                // --- MOUSE REPULSION FIELD ---
+                vec3 mouseWorld = vec3(uMouse.x * 25.0 * uAspect, uMouse.y * 25.0, 0.0);
+                vec3 repulseDir = finalPos - mouseWorld + vec3(0.001, 0.001, 0.0);
+                float repulseDist = length(repulseDir);
+                
+                float pushForce = smoothstep(12.0, 0.0, repulseDist) * 8.0;
+                finalPos += normalize(repulseDir) * pushForce;
+
+                // Color
+                float distFactor = length(finalPos) * 0.015;
+                float hue = fract(uHue + distFactor + (aRandom.x * 0.08));
+                vColor = hsl2rgb(vec3(hue, 1.0, 0.65));
+
+                vec4 mvPosition = modelViewMatrix * vec4(finalPos, 1.0);
+                gl_Position = projectionMatrix * mvPosition;
+                gl_PointSize = clamp(32.0 / -mvPosition.z, 2.0, 7.5);
+            }
+        `,
+        fragmentShader: `
+            varying vec3 vColor;
+            void main() {
+                vec2 uv = gl_PointCoord - vec2(0.5);
+                float d = length(uv);
+                if (d > 0.5) discard;
+                float intensity = 1.0 - (d * 2.0);
+                gl_FragColor = vec4(vColor, pow(intensity, 1.5));
+            }
+        `,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+    });
+
+    const particles = new THREE.Points(geometry, material);
+    scene.add(particles);
+
+    // -------------------------------------------------------------
+    // 4. RENDER ENGINE
+    // -------------------------------------------------------------
+    const clock = new THREE.Clock();
+
+    let targetScale = 1.0, currentScale = 1.0;
+    let targetHue = 0.13, currentHue = 0.13;
+    let targetTemplate = 2.0, currentTemplate = 2.0;
+
+    function renderLoop() {
+        requestAnimationFrame(renderLoop);
+
+        currentScale += (targetScale - currentScale) * 0.10;
+        currentHue += (targetHue - currentHue) * 0.08;
+        currentTemplate += (targetTemplate - currentTemplate) * 0.09;
+        
+        currentMouse.lerp(targetMouse, 0.15);
+
+        material.uniforms.uScale.value = currentScale;
+        material.uniforms.uHue.value = currentHue;
+        material.uniforms.uTemplate.value = currentTemplate;
+        material.uniforms.uMouse.value.copy(currentMouse);
+        material.uniforms.uTime.value = clock.getElapsedTime();
+
+        particles.rotation.y = clock.getElapsedTime() * 0.04;
+
+        renderer.render(scene, camera);
+    }
+    renderLoop();
+
+    // -------------------------------------------------------------
+    // 5. HAND TRACKING
+    // -------------------------------------------------------------
+    function getExtendedFingerCount(lm) {
+        let count = 0;
+        const wrist = lm[0];
+        const tips = [8, 12, 16, 20];
+        const pips = [6, 10, 14, 18];
+
+        for (let i = 0; i < 4; i++) {
+            const tipDist = Math.hypot(lm[tips[i]].x - wrist.x, lm[tips[i]].y - wrist.y);
+            const pipDist = Math.hypot(lm[pips[i]].x - wrist.x, lm[pips[i]].y - wrist.y);
+            if (tipDist > pipDist * 1.15) count++;
+        }
+
+        const thumbTipDist = Math.hypot(lm[4].x - wrist.x, lm[4].y - wrist.y);
+        const thumbMcpDist = Math.hypot(lm[2].x - wrist.x, lm[2].y - wrist.y);
+        if (thumbTipDist > thumbMcpDist * 1.1) count++;
+
+        return count;
+    }
+
+    const camStatus = document.getElementById('cam-status');
+    const camDot = document.getElementById('cam-dot');
+    let fingerBuffer = [];
+
+    function setCamStatus(text, color) {
+        camStatus.innerText = text;
+        camStatus.style.color = color;
+        camDot.style.background = color;
+        camDot.style.boxShadow = `0 0 8px ${color}`;
+    }
+
+    function onHandResults(results) {
+        const hands = results.multiHandLandmarks;
+
+        if (hands && hands.length > 0) {
+            setCamStatus(`Tracking Active (${hands.length})`, "#00ffaa");
+
+            if (hands.length >= 2) {
+                const h1 = hands[0][0]; 
+                const h2 = hands[1][0]; 
+                
+                const span = Math.hypot(h1.x - h2.x, h1.y - h2.y);
+                targetScale = Math.max(0.35, Math.min(span * 4.2, 3.8));
+
+                const midX = (h1.x + h2.x) * 0.5;
+                targetHue = 1.0 - midX;
+            } else {
+                const lm = hands[0];
+                targetHue = 1.0 - lm[0].x;
+
+                const pinch = Math.hypot(lm[4].x - lm[8].x, lm[4].y - lm[8].y);
+                targetScale = Math.max(0.45, Math.min(pinch * 8.5, 3.2));
+
+                const num = getExtendedFingerCount(lm);
+                fingerBuffer.push(num);
+                if (fingerBuffer.length > 4) fingerBuffer.shift();
+                
+                const avgFingers = Math.round(fingerBuffer.reduce((a, b) => a + b, 0) / fingerBuffer.length);
+
+                if (avgFingers <= 1) targetTemplate = 0.0;      
+                else if (avgFingers === 2) targetTemplate = 1.0; 
+                else if (avgFingers === 3) targetTemplate = 2.0; 
+                else targetTemplate = 3.0;                       
+            }
+        } else {
+            setCamStatus("Looking for hands...", "#ffaa00");
+            targetScale = 1.0;
+        }
+    }
+
+    // -------------------------------------------------------------
+    // 6. CAMERA SETUP
+    // -------------------------------------------------------------
+    const videoElement = document.getElementById('video');
+    const cameraSelect = document.getElementById('camera-select');
+    let currentStream = null;
+    let mediapipeHands = null;
+    let isProcessingFrame = false;
+
+    async function startCamera(deviceId = null) {
+        if (currentStream) {
+            currentStream.getTracks().forEach(t => t.stop());
+        }
+
+        setCamStatus("Connecting camera...", "#ffaa00");
+
+        const constraints = {
+            video: { width: { ideal: 640 }, height: { ideal: 480 }, deviceId: deviceId ? { exact: deviceId } : undefined }
+        };
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            currentStream = stream;
+            videoElement.srcObject = stream;
+            await videoElement.play();
+
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(d => d.kind === 'videoinput');
+            cameraSelect.innerHTML = '';
+
+            videoDevices.forEach((dev, idx) => {
+                const opt = document.createElement('option');
+                opt.value = dev.deviceId;
+                opt.text = dev.label || `Camera ${idx + 1}`;
+                if (stream.getVideoTracks()[0].getSettings().deviceId === dev.deviceId) opt.selected = true;
+                cameraSelect.appendChild(opt);
+            });
+
+            initMediaPipeHands();
+
+        } catch (err) {
+            console.error("Camera error:", err);
+            setCamStatus("Camera blocked", "#ff4444");
+        }
+    }
+
+    cameraSelect.addEventListener('change', (e) => startCamera(e.target.value));
+
+    function initMediaPipeHands() {
+        if (mediapipeHands) return;
+
+        mediapipeHands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        mediapipeHands.setOptions({
+            maxNumHands: 2, modelComplexity: 0, minDetectionConfidence: 0.65, minTrackingConfidence: 0.65
+        });
+
+        mediapipeHands.onResults(onHandResults);
+
+        async function captureLoop() {
+            if (!isProcessingFrame && videoElement.readyState >= 2) {
+                isProcessingFrame = true;
+                await mediapipeHands.send({ image: videoElement });
+                isProcessingFrame = false;
+            }
+            requestAnimationFrame(captureLoop);
+        }
+        captureLoop();
+    }
+
+    // -------------------------------------------------------------
+    // 7. VOICE AI
+    // -------------------------------------------------------------
+    const micStatus = document.getElementById('mic-status');
+    const micDot = document.getElementById('mic-dot');
+    const speechFeed = document.getElementById('voice-speech-feed');
+    const voiceToggleBtn = document.getElementById('voice-toggle-btn');
+
+    let recognition = null;
+    let voiceActive = false;
+
+    function setupVoiceAI() {
+        const SpeechClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechClass) {
+            micStatus.innerText = "Voice AI: Not Supported";
+            micStatus.style.color = "#ff4444";
+            micDot.style.background = "#ff4444";
+            return;
+        }
+
+        recognition = new SpeechClass();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => {
+            voiceActive = true;
+            micStatus.innerText = "Voice AI: Active";
+            micStatus.style.color = "#00ffaa";
+            micDot.style.background = "#00ffaa";
+            micDot.style.boxShadow = "0 0 8px #00ffaa";
+            voiceToggleBtn.innerText = "Stop Voice AI";
+        };
+
+        recognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+            }
+            const phrase = transcript.toLowerCase();
+            speechFeed.innerText = `Heard: "${transcript.trim()}"`;
+
+            if (phrase.includes("one") || phrase.includes("1") || phrase.includes("firework")) {
+                targetTemplate = 0.0;
+            } else if (phrase.includes("two") || phrase.includes("2") || phrase.includes("heart")) {
+                targetTemplate = 1.0;
+            } else if (phrase.includes("three") || phrase.includes("3") || phrase.includes("saturn")) {
+                targetTemplate = 2.0;
+            } else if (phrase.includes("four") || phrase.includes("4") || phrase.includes("five") || phrase.includes("5") || phrase.includes("flower") || phrase.includes("sphere") || phrase.includes("galaxy")) {
+                targetTemplate = 3.0;
+            } else if (phrase.includes("expand") || phrase.includes("big") || phrase.includes("zoom in")) {
+                targetScale = 2.8;
+            } else if (phrase.includes("condense") || phrase.includes("shrink") || phrase.includes("small")) {
+                targetScale = 0.5;
+            } else if (phrase.includes("red")) {
+                targetHue = 0.98;
+            } else if (phrase.includes("blue")) {
+                targetHue = 0.60;
+            } else if (phrase.includes("cyan")) {
+                targetHue = 0.50;
+            } else if (phrase.includes("gold") || phrase.includes("yellow")) {
+                targetHue = 0.13;
+            } else if (phrase.includes("purple") || phrase.includes("magenta")) {
+                targetHue = 0.82;
+            } else if (phrase.includes("green")) {
+                targetHue = 0.33;
+            }
+        };
+
+        recognition.onend = () => {
+            if (voiceActive) {
+                try { recognition.start(); } catch(e) {}
+            }
+        };
+    }
+
+    voiceToggleBtn.addEventListener('click', () => {
+        if (!recognition) setupVoiceAI();
+
+        if (!voiceActive) {
+            try { recognition.start(); } catch(e) { console.warn(e); }
+        } else {
+            voiceActive = false;
+            recognition.stop();
+            micStatus.innerText = "Voice AI: Paused";
+            micStatus.style.color = "#ffaa00";
+            micDot.style.background = "#ffaa00";
+            micDot.style.boxShadow = "0 0 8px #ffaa00";
+            voiceToggleBtn.innerText = "Enable Voice AI";
+        }
+    });
+
+    // -------------------------------------------------------------
+    // 8. RESIZE LOGIC
+    // -------------------------------------------------------------
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        material.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
+    });
+
+    startCamera();
+</script>
+</body>
+</html>
