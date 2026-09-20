@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Moon & Earth Interactive Universe</title>
+    <title>Moon & Earth Interactive Universe - Fast Voice Edition</title>
     
     <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -25,6 +25,11 @@
             text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.9); line-height: 1.5;
         }
 
+        #voice-cmd-display {
+            margin-top: 15px; color: #4CAF50; font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9); font-size: 1rem;
+        }
+
         #mode-text {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             color: #fff; font-size: 5rem; font-weight: 800; letter-spacing: 15px;
@@ -32,6 +37,29 @@
             text-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
+
+        /* CAMERA CONTROLS UI */
+        #camera-controls {
+            position: absolute; top: 20px; right: 20px; z-index: 30;
+            display: none; 
+            flex-direction: column; gap: 10px;
+            background: rgba(15, 20, 25, 0.85); padding: 15px; border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 220px;
+        }
+        #camera-controls label { font-size: 0.7rem; color: #ccc; text-transform: uppercase; letter-spacing: 1px; }
+        #camera-select {
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff; padding: 8px; border-radius: 4px; font-size: 0.8rem;
+            outline: none; cursor: pointer; width: 100%; text-overflow: ellipsis;
+        }
+        #camera-select option { background: #111; color: #fff; }
+        #switch-cam-btn {
+            background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff; padding: 8px; border-radius: 4px; font-size: 0.8rem;
+            font-weight: bold; cursor: pointer; transition: background 0.2s; text-transform: uppercase;
+        }
+        #switch-cam-btn:hover { background: rgba(255, 255, 255, 0.3); }
 
         /* Start Screen */
         #start-screen {
@@ -57,25 +85,49 @@
             line-height: 1.5;
         }
 
-        .loader { color: white; font-size: 1rem; letter-spacing: 2px; display: none; }
+        .loader { color: white; font-size: 1rem; letter-spacing: 2px; display: none; margin-bottom: 20px; }
 
         #video-feed { 
             position: absolute; bottom: 20px; right: 20px; width: 160px; height: 120px; 
             border-radius: 10px; border: 2px solid rgba(255,255,255,0.2); 
             z-index: 20; object-fit: cover; transform: scaleX(-1); 
         }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            #camera-controls { top: auto; bottom: 160px; right: 20px; width: calc(100% - 40px); }
+            #ui-overlay { font-size: 0.75rem; }
+            #mode-text { font-size: 3rem; }
+        }
     </style>
 </head>
 <body>
 
+<!-- Audio Element -->
+<audio id="bg-audio" loop>
+    <source src="space.mp3" type="audio/mpeg">
+</audio>
+
 <div id="start-screen">
-    <button id="start-btn">Allow Camera & Start</button>
-    <div id="loader" class="loader">Requesting Camera Access (Laptop/Mobile)...</div>
+    <button id="start-btn">Allow Camera, Mic & Start</button>
+    <div id="loader" class="loader">Requesting Access (Laptop/Mobile)...</div>
     <div id="error-msg"></div>
 </div>
 
-<div id="ui-overlay">Waiting for Camera...</div>
+<div id="ui-overlay">
+    <div id="instructions">Waiting for Camera...</div>
+    <div id="voice-cmd-display">🎤 Voice Assistant: Waiting...</div>
+</div>
 <div id="mode-text">MOON</div>
+
+<!-- CAMERA CONTROLS -->
+<div id="camera-controls">
+    <label for="camera-select">Select Camera</label>
+    <select id="camera-select">
+        <option value="">Loading cameras...</option>
+    </select>
+    <button id="switch-cam-btn">Switch Camera</button>
+</div>
 
 <video id="video-feed" autoplay playsinline muted></video>
 <div id="canvas-container"></div>
@@ -109,8 +161,6 @@
     // =========================================================
     // 2. DYNAMIC BACKGROUNDS (SPACE VS EARTH NATURE)
     // =========================================================
-    
-    // Background 1: Stars (For Moon Mode)
     function createStars() {
         const starCount = 3000;
         const starGeo = new THREE.BufferGeometry();
@@ -155,7 +205,6 @@
     const starField = createStars();
     scene.add(starField);
 
-    // Background 2: Nature Water/Tree Waves (For Earth Mode)
     const natureGeo = new THREE.PlaneGeometry(200, 200, 32, 32);
     const natureMat = new THREE.ShaderMaterial({
         uniforms: { uTime: { value: 0 }, uOpacity: { value: 0.0 } },
@@ -222,7 +271,6 @@
     // =========================================================
     const baseSphereGeo = new THREE.SphereGeometry(6, 64, 64);
     
-    // --- MOON ---
     const moonGroup = new THREE.Group(); 
     const moonMat = new THREE.MeshStandardMaterial({
         map: textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/moon_1024.jpg'),
@@ -231,7 +279,6 @@
     moonGroup.add(new THREE.Mesh(baseSphereGeo, moonMat));
     globeContainer.add(moonGroup);
 
-    // --- EARTH ---
     const earthGroup = new THREE.Group(); 
     earthGroup.visible = false;
     const earthMat = new THREE.MeshPhongMaterial({
@@ -241,7 +288,6 @@
     earthGroup.add(new THREE.Mesh(baseSphereGeo, earthMat));
     globeContainer.add(earthGroup);
 
-    // Planet Glow Aura
     const glowMat = new THREE.ShaderMaterial({
         uniforms: { uOpacity: { value: 1.0 }, uColor: { value: new THREE.Color(0xaaccff) } },
         vertexShader: `
@@ -267,58 +313,72 @@
     globeContainer.add(planetGlow);
 
     // =========================================================
-    // 4. INTERACTION LOGIC
+    // 4. STATE & INTERACTION LOGIC
     // =========================================================
     const clock = new THREE.Clock();
     let targetRotX = 0, targetRotY = 0, currentRotX = 0, currentRotY = 0;
     let targetScale = 1.0, currentScale = 1.0;
     
-    // Mode: 0 = Moon, 1 = Earth
     let targetMode = 0; 
     let modeWeights = { moon: 1.0, earth: 0.0 };
     let lastModeChangeTime = 0;
     
-    // Left hand grayscale value (1.0 is pure white/normal, lower is dark/gray)
+    let targetBrightness = 1.0; 
     let customBrightness = 1.0; 
     
-    const uiText = document.getElementById('ui-overlay');
+    // Voice rotation variables
+    let voiceAutoRotate = false;
+    let rotationSpeed = 0.02; // Default speed
+    let isHandRotating = false; 
+    
+    const uiInstructions = document.getElementById('instructions');
+    const voiceCmdDisplay = document.getElementById('voice-cmd-display');
     const modeText = document.getElementById('mode-text');
 
+    function triggerModeText(text) {
+        modeText.innerText = text;
+        modeText.style.opacity = 1;
+        modeText.style.transform = "translate(-50%, -50%) scale(1.2)";
+        setTimeout(() => { 
+            modeText.style.opacity = 0; 
+            modeText.style.transform = "translate(-50%, -50%) scale(1.0)"; 
+        }, 1200);
+    }
+
+    // Hand Gesture Processing
     function onHandResults(results) {
         if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-            uiText.innerHTML = "Right Hand: Rotate<br>Left Hand (Up/Down): Brightness (White/Gray/Black)<br>Left Hand (Swipe Left Edge): Change Planet<br>Both Hands: Zoom";
+            uiInstructions.innerHTML = "Hands Active - Left: Rotate/Swipe | Right: Brightness (Y Axis) | Both: Zoom";
             
             let leftHand = null, rightHand = null;
+
             if (results.multiHandLandmarks.length === 1) {
-                if (results.multiHandLandmarks[0][0].x < 0.5) leftHand = results.multiHandLandmarks[0];
+                if (results.multiHandLandmarks[0][0].x > 0.5) leftHand = results.multiHandLandmarks[0];
                 else rightHand = results.multiHandLandmarks[0];
             } else {
                 const h1 = results.multiHandLandmarks[0], h2 = results.multiHandLandmarks[1];
-                if (h1[0].x < h2[0].x) { leftHand = h1; rightHand = h2; }
+                if (h1[0].x > h2[0].x) { leftHand = h1; rightHand = h2; }
                 else { leftHand = h2; rightHand = h1; }
             }
 
-            if (rightHand) {
-                targetRotY = (rightHand[0].x - 0.5) * Math.PI * 3;
-                targetRotX = (rightHand[0].y - 0.5) * Math.PI * 2;
-            }
-
             if (leftHand) {
-                // Swipe Left to change Planet (Toggles between 0 and 1)
-                if (leftHand[0].x < 0.2) {
+                isHandRotating = true;
+                targetRotY = -(leftHand[0].x - 0.5) * Math.PI * 3;
+                targetRotX = (leftHand[0].y - 0.5) * Math.PI * 2;
+
+                if (leftHand[0].x > 0.8) {
                     if (Date.now() - lastModeChangeTime > 1500) { 
-                        targetMode = (targetMode === 0) ? 1 : 0; // Toggle 0 and 1
-                        modeText.innerText = ["MOON", "EARTH"][targetMode];
-                        modeText.style.opacity = 1;
-                        modeText.style.transform = "translate(-50%, -50%) scale(1.2)";
-                        setTimeout(() => { modeText.style.opacity = 0; modeText.style.transform = "translate(-50%, -50%) scale(1.0)"; }, 1200);
+                        targetMode = (targetMode === 0) ? 1 : 0; 
+                        triggerModeText(["MOON", "EARTH"][targetMode]);
                         lastModeChangeTime = Date.now();
                     }
                 }
-                
-                customBrightness = 1.0 - (leftHand[0].y * 0.85); 
             } else {
-                customBrightness += (1.0 - customBrightness) * 0.1;
+                isHandRotating = false; 
+            }
+
+            if (rightHand) {
+                targetBrightness = 1.0 - (rightHand[0].y * 0.85); 
             }
 
             if (leftHand && rightHand) {
@@ -326,118 +386,259 @@
                 targetScale = Math.max(0.5, Math.min(dist * 3.0, 2.5));
             }
         } else {
-            uiText.innerText = "Show hands to interact.";
+            uiInstructions.innerHTML = "Show hands or use voice commands (Fast/Slow/Rotate).";
             targetScale = 1.0; 
+            isHandRotating = false;
         }
     }
 
     // =========================================================
-    // 5. FIXED CAMERA PERMISSIONS (FOR LAPTOP & MOBILE)
+    // 5. FAST VOICE ASSISTANT LOGIC (INTERIM RESULTS ENABLED)
+    // =========================================================
+    function initVoiceAssistant() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            // ENABLED INTERIM RESULTS FOR INSTANT RESPONSE
+            recognition.interimResults = true; 
+            recognition.lang = 'en-US';
+
+            let lastCommandTime = 0;
+
+            recognition.onresult = (event) => {
+                let latestWords = "";
+                // Loop to get the most recent words being spoken right now
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    latestWords += event.results[i][0].transcript.toLowerCase();
+                }
+                
+                if (latestWords.trim().length > 0) {
+                    voiceCmdDisplay.innerText = '🎤 Hearing: "' + latestWords.trim() + '"';
+                }
+                
+                const now = Date.now();
+                // Prevent duplicate triggering of the same command instantly
+                if (now - lastCommandTime < 600) return; 
+
+                let commandExecuted = false;
+
+                // Planet Switching
+                if (latestWords.includes('moon')) { 
+                    targetMode = 0; triggerModeText("MOON"); commandExecuted = true; 
+                } 
+                else if (latestWords.includes('earth')) { 
+                    targetMode = 1; triggerModeText("EARTH"); commandExecuted = true; 
+                }
+
+                // Brightness Controls
+                if (latestWords.includes('up') || latestWords.includes('increase')) { 
+                    targetBrightness = Math.min(1.0, targetBrightness + 0.3); commandExecuted = true; 
+                } 
+                else if (latestWords.includes('down') || latestWords.includes('decrease')) { 
+                    targetBrightness = Math.max(0.1, targetBrightness - 0.3); commandExecuted = true; 
+                }
+
+                // Rotation & Speed Controls
+                if (latestWords.includes('fast')) { 
+                    rotationSpeed = 0.08; voiceAutoRotate = true; commandExecuted = true; 
+                }
+                else if (latestWords.includes('slow')) { 
+                    rotationSpeed = 0.005; voiceAutoRotate = true; commandExecuted = true; 
+                }
+                else if (latestWords.includes('rotate') || latestWords.includes('spin')) { 
+                    // Snaps to perfect upright globe position and starts rotating
+                    targetRotX = 0; 
+                    voiceAutoRotate = true; 
+                    commandExecuted = true; 
+                } 
+                else if (latestWords.includes('stop')) { 
+                    voiceAutoRotate = false; commandExecuted = true; 
+                }
+
+                if (commandExecuted) {
+                    lastCommandTime = now;
+                    voiceCmdDisplay.innerText = '✅ Executed: "' + latestWords.trim() + '"';
+                }
+            };
+
+            recognition.onerror = (e) => console.log("Voice Error: ", e.error);
+            
+            // Auto-restart if it naturally stops listening
+            recognition.onend = () => {
+                recognition.start();
+            };
+
+            recognition.start();
+            voiceCmdDisplay.innerText = "🎤 Voice Assistant: Listening (Say 'Moon', 'Earth', 'Rotate', 'Fast', 'Slow')";
+        } else {
+            voiceCmdDisplay.innerText = "🎤 Voice Assistant: Not Supported in this browser.";
+            voiceCmdDisplay.style.color = "red";
+        }
+    }
+
+    // =========================================================
+    // 6. CAMERA & START LOGIC
     // =========================================================
     const videoElement = document.getElementById('video-feed');
     const startBtn = document.getElementById('start-btn');
     const loader = document.getElementById('loader');
     const startScreen = document.getElementById('start-screen');
     const errorMsg = document.getElementById('error-msg');
+    const bgAudio = document.getElementById('bg-audio');
+    
+    const cameraControls = document.getElementById('camera-controls');
+    const cameraSelect = document.getElementById('camera-select');
+    const switchCamBtn = document.getElementById('switch-cam-btn');
+
+    let currentStream = null;
+    let mediapipeHandsInit = false; 
+    const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+    hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
+    hands.onResults(onHandResults);
+
+    function stopCurrentCamera() {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+            currentStream = null;
+        }
+        videoElement.srcObject = null;
+    }
+
+    async function populateCameraList() {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            cameraSelect.innerHTML = '';
+            if (videoDevices.length === 0) return (cameraSelect.innerHTML = '<option value="">No camera found</option>');
+
+            videoDevices.forEach((device, index) => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.text = device.label || `Camera ${index + 1}`;
+                cameraSelect.appendChild(option);
+            });
+            
+            if (currentStream && currentStream.getVideoTracks().length > 0) {
+                const activeSettings = currentStream.getVideoTracks()[0].getSettings();
+                if (activeSettings.deviceId) cameraSelect.value = activeSettings.deviceId;
+            }
+        } catch (err) {}
+    }
+
+    async function startCamera(deviceId = null) {
+        stopCurrentCamera();
+        const constraints = { video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: false };
+        if (deviceId) constraints.video.deviceId = { exact: deviceId };
+
+        try {
+            currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+            videoElement.srcObject = currentStream;
+            await new Promise((resolve) => { videoElement.onloadedmetadata = () => resolve(); });
+            await populateCameraList();
+            return true;
+        } catch (err) {
+            handleCameraError(err);
+            return false;
+        }
+    }
+
+    function handleCameraError(err) {
+        loader.style.display = 'none';
+        errorMsg.style.display = 'block';
+        startBtn.style.display = 'inline-block';
+        startBtn.innerText = "Try Again";
+        errorMsg.innerHTML = `❌ <b>Camera Error</b> ❌<br><br>${err.message || err.name}`;
+    }
 
     startBtn.addEventListener('click', async () => {
         startBtn.style.display = 'none';
-        loader.style.display = 'block';
         errorMsg.style.display = 'none';
+        loader.style.display = 'block';
 
-        let stream = null;
+        bgAudio.play().catch(e => console.log('Audio autoplay prevented:', e));
 
-        try {
-            // ATTEMPT 1: General universal camera (Works best on 99% of laptops)
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { width: { ideal: 640 }, height: { ideal: 480 } },
-                    audio: false
-                });
-            } catch (err1) {
-                // ATTEMPT 2: Fallback to explicitly request front camera (Works best on Mobile)
-                console.warn("Default camera failed. Trying Mobile Front Camera...");
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
-                    audio: false
-                });
-            }
+        const success = await startCamera();
+        
+        if (success) {
+            startScreen.style.display = 'none';
+            cameraControls.style.display = 'flex'; 
 
-            // Apply stream to video element
-            videoElement.srcObject = stream;
-            
-            // Start MediaPipe AI
-            const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-            hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
-            hands.onResults(onHandResults);
+            initVoiceAssistant();
 
-            videoElement.onloadeddata = () => {
-                startScreen.style.display = 'none'; 
+            if (!mediapipeHandsInit) {
+                mediapipeHandsInit = true;
                 const sendFrames = async () => {
-                    if (!videoElement.paused && !videoElement.ended) await hands.send({ image: videoElement });
+                    if (!videoElement.paused && !videoElement.ended && currentStream) {
+                        await hands.send({ image: videoElement });
+                    }
                     requestAnimationFrame(sendFrames);
                 };
                 sendFrames();
-            };
-        } catch (err) {
-            console.error("Camera access failed completely:", err);
-            loader.style.display = 'none';
-            errorMsg.style.display = 'block';
-            
-            // Explicit error check for the laptop "file://" block issue
-            if (window.location.protocol === 'file:') {
-                errorMsg.innerHTML = "❌ BROWSER BLOCKED LAPTOP CAMERA ❌<br><br>Google Chrome/Edge strictly block laptop webcams if you just double-click the HTML file from a folder.<br><br><b>How to fix:</b> Go to <b>CodePen.io</b> on your laptop, paste this code into the HTML box, and it will ask for permission instantly.";
-            } else {
-                errorMsg.innerHTML = "❌ CAMERA PERMISSION DENIED ❌<br><br>Please click the lock icon (🔒) in your browser's address bar, allow the Camera, and refresh the page.";
             }
-            
-            startBtn.style.display = 'block';
-            startBtn.innerText = "Try Again";
+        }
+    });
+
+    cameraSelect.addEventListener('change', async (e) => {
+        if (e.target.value) await startCamera(e.target.value);
+    });
+
+    switchCamBtn.addEventListener('click', async () => {
+        const options = Array.from(cameraSelect.options);
+        if (options.length <= 1) return; 
+        const currentIndex = options.findIndex(opt => opt.selected);
+        const nextIndex = (currentIndex + 1) % options.length;
+        if (options[nextIndex].value) {
+            cameraSelect.value = options[nextIndex].value;
+            await startCamera(options[nextIndex].value);
         }
     });
 
     // =========================================================
-    // 6. RENDER LOOP
+    // 7. RENDER LOOP
     // =========================================================
     function animate() {
         requestAnimationFrame(animate);
         const time = clock.getElapsedTime();
 
+        // Voice Rotation override (only applies if Hand is not actively rotating)
+        // This spins the globe 360 degrees constantly on the Y axis
+        if (voiceAutoRotate && !isHandRotating) {
+            targetRotY += rotationSpeed; 
+        }
+
         currentRotX += (targetRotX - currentRotX) * 0.1;
         currentRotY += (targetRotY - currentRotY) * 0.1;
         currentScale += (targetScale - currentScale) * 0.1;
+        
+        // Smoothly approach the target brightness (set by either Hand or Voice)
+        customBrightness += (targetBrightness - customBrightness) * 0.1;
         
         globeContainer.rotation.x = currentRotX;
         globeContainer.rotation.y = currentRotY + (time * 0.05); 
         globeContainer.scale.set(currentScale, currentScale, currentScale);
 
-        // Update Backgrounds
         starField.rotation.y = time * 0.01;
         starField.material.uniforms.uTime.value = time;
         natureMat.uniforms.uTime.value = time;
 
-        // Smooth Mode Transition
         modeWeights.moon += ((targetMode === 0 ? 1 : 0) - modeWeights.moon) * 0.05;
         modeWeights.earth += ((targetMode === 1 ? 1 : 0) - modeWeights.earth) * 0.05;
 
-        // Apply Opacities to Planets
         moonGroup.visible = modeWeights.moon > 0.01;
         earthGroup.visible = modeWeights.earth > 0.01;
         moonMat.opacity = modeWeights.moon;
         earthMat.opacity = modeWeights.earth;
 
-        // Apply Opacities to Backgrounds
         starField.material.uniforms.uOpacity.value = modeWeights.moon;
         natureMat.uniforms.uOpacity.value = modeWeights.earth;
 
-        // Apply Grayscale/Brightness (White/Gray/Black only)
         const grayTint = new THREE.Color(customBrightness, customBrightness, customBrightness);
         moonMat.color.copy(grayTint);
         earthMat.color.copy(grayTint);
 
-        // Adjust Glow Color
-        if (targetMode === 0) glowMat.uniforms.uColor.value.copy(new THREE.Color(0xaaccff).multiply(grayTint)); // Moon Glow
-        if (targetMode === 1) glowMat.uniforms.uColor.value.copy(new THREE.Color(0x4488ff).multiply(grayTint)); // Earth Glow
+        if (targetMode === 0) glowMat.uniforms.uColor.value.copy(new THREE.Color(0xaaccff).multiply(grayTint)); 
+        if (targetMode === 1) glowMat.uniforms.uColor.value.copy(new THREE.Color(0x4488ff).multiply(grayTint)); 
 
         renderer.render(scene, camera);
     }
