@@ -1,454 +1,1879 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Moon & Earth Interactive Universe</title>
-    
-    <!-- Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- MediaPipe Hands -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body, html { 
-            width: 100vw; height: 100vh; overflow: hidden; 
-            background-color: #000; font-family: "Segoe UI", sans-serif; user-select: none;
-        }
+<title>Lord Venkateswara - Divine Pixel Formation</title>
 
-        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+<style>
 
-        #ui-overlay {
-            position: absolute; top: 20px; left: 20px; color: rgba(255, 255, 255, 0.9);
-            font-size: 0.9rem; z-index: 10; pointer-events: none; letter-spacing: 1px;
-            text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.9); line-height: 1.5;
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        #mode-text {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #fff; font-size: 5rem; font-weight: 800; letter-spacing: 15px;
-            text-transform: uppercase; z-index: 10; pointer-events: none; opacity: 0;
-            text-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+}
 
-        /* Start Screen */
-        #start-screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 50; display: flex; 
-            flex-direction: column; justify-content: center; align-items: center; text-align: center;
-        }
-        
-        #start-btn {
-            background: linear-gradient(45deg, #2196F3, #4CAF50);
-            color: white; border: none; padding: 15px 40px; font-size: 1.2rem;
-            font-weight: bold; border-radius: 30px; cursor: pointer;
-            box-shadow: 0 0 20px rgba(33, 150, 243, 0.5); text-transform: uppercase;
-            letter-spacing: 2px; transition: transform 0.2s; margin-bottom: 20px;
-        }
-        
-        #start-btn:hover { transform: scale(1.05); }
-        
-        #error-msg {
-            color: #ff4444; font-weight: bold; max-width: 650px; 
-            font-size: 1rem; padding: 15px; border: 1px solid #ff4444; 
-            border-radius: 8px; background: rgba(255,0,0,0.1); display: none;
-            line-height: 1.5;
-        }
+body {
+    position: relative;
+}
 
-        .loader { color: white; font-size: 1rem; letter-spacing: 2px; display: none; }
+canvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+}
 
-        #video-feed { 
-            position: absolute; bottom: 20px; right: 20px; width: 160px; height: 120px; 
-            border-radius: 10px; border: 2px solid rgba(255,255,255,0.2); 
-            z-index: 20; object-fit: cover; transform: scaleX(-1); 
-        }
-    </style>
+/* ==========================================
+   PARTICLE CANVAS
+========================================== */
+
+#canvas {
+    z-index: 1;
+    background: #000;
+}
+
+/* ==========================================
+   FINAL IMAGE
+========================================== */
+
+#finalImage {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 100vw;
+    height: 100vh;
+
+    object-fit: contain;
+
+    opacity: 0;
+
+    z-index: 5;
+    pointer-events: none;
+
+    transition: opacity 2.5s ease;
+}
+
+#finalImage.show {
+    opacity: 1;
+}
+
+/* ==========================================
+   FLOWER GARLAND CANVAS
+========================================== */
+
+#garlandCanvas {
+    position: fixed;
+    inset: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    pointer-events: none;
+
+    z-index: 10;
+}
+
+/* ==========================================
+   START BUTTON
+========================================== */
+
+#startButton {
+    position: fixed;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+
+    padding: 17px 42px;
+
+    border: 1px solid rgba(255, 215, 120, 0.8);
+
+    border-radius: 50px;
+
+    background: rgba(15, 8, 0, 0.9);
+
+    color: #ffd76a;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 18px;
+
+    letter-spacing: 2px;
+
+    cursor: pointer;
+
+    z-index: 20;
+
+    backdrop-filter: blur(10px);
+
+    transition: 0.3s ease;
+}
+
+#startButton:hover {
+    transform:
+        translate(-50%, -50%)
+        scale(1.06);
+
+    background:
+        rgba(255, 180, 50, 0.15);
+
+    box-shadow:
+        0 0 35px
+        rgba(255, 190, 60, 0.45);
+}
+
+/* ==========================================
+   LOADING
+========================================== */
+
+#loading {
+    position: fixed;
+
+    left: 50%;
+    top: calc(50% + 72px);
+
+    transform: translateX(-50%);
+
+    color: #ffd76a;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 13px;
+
+    letter-spacing: 2px;
+
+    display: none;
+
+    z-index: 20;
+}
+
+</style>
 </head>
+
+
 <body>
 
-<div id="start-screen">
-    <button id="start-btn">Allow Camera & Start</button>
-    <div id="loader" class="loader">Requesting Camera Access (Laptop/Mobile)...</div>
-    <div id="error-msg"></div>
+<!-- ==========================================
+     MAIN PARTICLE CANVAS
+========================================== -->
+
+<canvas id="canvas"></canvas>
+
+
+<!-- ==========================================
+     ORIGINAL HIGH RES IMAGE
+========================================== -->
+
+<img
+    id="finalImage"
+    src="Lord venkateswara.jpg"
+    alt="Lord Venkateswara"
+>
+
+
+<!-- ==========================================
+     FLOWER GARLAND CANVAS
+========================================== -->
+
+<canvas id="garlandCanvas"></canvas>
+
+
+<!-- ==========================================
+     BACKGROUND MUSIC
+========================================== -->
+
+<audio
+    id="bgMusic"
+    loop
+    preload="auto"
+>
+    <source
+        src="venkateswara.mp3"
+        type="audio/mpeg"
+    >
+
+    Your browser does not support the audio element.
+</audio>
+
+
+<!-- ==========================================
+     START BUTTON
+========================================== -->
+
+<button id="startButton">
+     🙏 <em>OM NAMO VENKATESAYA</em> 🙏
+</button>
+
+
+<!-- ==========================================
+     LOADING
+========================================== -->
+
+<div id="loading">
+    PREPARING DIVINE PIXELS...
 </div>
 
-<div id="ui-overlay">Waiting for Camera...</div>
-<div id="mode-text">MOON</div>
-
-<video id="video-feed" autoplay playsinline muted></video>
-<div id="canvas-container"></div>
 
 <script>
-    // =========================================================
-    // 1. THREE.JS SCENE SETUP
-    // =========================================================
-    const container = document.getElementById('canvas-container');
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 25;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    container.appendChild(renderer.domElement);
+/* =========================================================
+   MAIN PARTICLE SYSTEM
+========================================================= */
 
-    const textureLoader = new THREE.TextureLoader();
-    textureLoader.setCrossOrigin("anonymous");
+const canvas =
+    document.getElementById("canvas");
 
-    // Lighting
-    const sunLight = new THREE.DirectionalLight(0xffffff, 2.0);
-    sunLight.position.set(50, 20, 30);
-    scene.add(sunLight);
-    scene.add(new THREE.AmbientLight(0x404040, 0.6));
+const ctx =
+    canvas.getContext("2d", {
+        alpha: false
+    });
 
-    const globeContainer = new THREE.Group();
-    scene.add(globeContainer);
 
-    // =========================================================
-    // 2. DYNAMIC BACKGROUNDS (SPACE VS EARTH NATURE)
-    // =========================================================
-    
-    // Background 1: Stars (For Moon Mode)
-    function createStars() {
-        const starCount = 3000;
-        const starGeo = new THREE.BufferGeometry();
-        const starPos = new Float32Array(starCount * 3);
-        const starPhase = new Float32Array(starCount);
-        
-        for(let i=0; i<starCount; i++) {
-            const r = 150 + Math.random() * 400;
-            const theta = 2 * Math.PI * Math.random();
-            const phi = Math.acos(2 * Math.random() - 1);
-            starPos[i*3] = r * Math.sin(phi) * Math.cos(theta);
-            starPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-            starPos[i*3+2] = r * Math.cos(phi);
-            starPhase[i] = Math.random() * Math.PI * 2;
-        }
-        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-        starGeo.setAttribute('aPhase', new THREE.BufferAttribute(starPhase, 1));
+/* =========================================================
+   UI
+========================================================= */
 
-        const starMat = new THREE.ShaderMaterial({
-            uniforms: { uTime: { value: 0 }, uOpacity: { value: 1.0 } },
-            vertexShader: `
-                uniform float uTime; attribute float aPhase; varying float vAlpha;
-                void main() {
-                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                    gl_Position = projectionMatrix * mvPosition;
-                    gl_PointSize = (150.0 / -mvPosition.z);
-                    vAlpha = 0.2 + 0.8 * abs(sin(uTime * 1.0 + aPhase));
-                }
-            `,
-            fragmentShader: `
-                varying float vAlpha; uniform float uOpacity;
-                void main() {
-                    float dist = length(gl_PointCoord - vec2(0.5));
-                    if(dist > 0.5) discard;
-                    gl_FragColor = vec4(1.0, 1.0, 1.0, vAlpha * uOpacity * (1.0 - dist*2.0));
-                }
-            `,
-            transparent: true, blending: THREE.AdditiveBlending, depthWrite: false
-        });
-        return new THREE.Points(starGeo, starMat);
+const startButton =
+    document.getElementById("startButton");
+
+const loading =
+    document.getElementById("loading");
+
+const finalImage =
+    document.getElementById("finalImage");
+
+
+/* =========================================================
+   BACKGROUND MUSIC
+========================================================= */
+
+const bgMusic =
+    document.getElementById("bgMusic");
+
+bgMusic.volume = 0.7;
+
+
+/* =========================================================
+   IMAGE
+========================================================= */
+
+const image =
+    new Image();
+
+image.src =
+    "Lord venkateswara.jpg";
+
+let imageReady =
+    false;
+
+
+image.onload = () => {
+
+    imageReady = true;
+
+    console.log(
+        "Lord Venkateswara image loaded."
+    );
+
+};
+
+
+image.onerror = () => {
+
+    alert(
+        "Image not found!\n\n" +
+        "Make sure this file exists:\n\n" +
+        "Lord venkateswara.jpg"
+    );
+
+};
+
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+const BASE_DOT_GAP = 5;
+
+const MAX_PARTICLES = 25000;
+
+const FORMATION_TIME = 5;
+
+const MAX_DELAY = 1.2;
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let particles = [];
+
+let animationStarted = false;
+
+let animationStartTime = 0;
+
+let finalImageShown = false;
+
+let canvasDpr = 1;
+
+
+/* =========================================================
+   RESIZE MAIN CANVAS
+========================================================= */
+
+function resizeCanvas() {
+
+    canvasDpr =
+        Math.min(
+            window.devicePixelRatio || 1,
+            1.25
+        );
+
+
+    canvas.width =
+        Math.floor(
+            window.innerWidth *
+            canvasDpr
+        );
+
+
+    canvas.height =
+        Math.floor(
+            window.innerHeight *
+            canvasDpr
+        );
+
+
+    canvas.style.width =
+        window.innerWidth + "px";
+
+
+    canvas.style.height =
+        window.innerHeight + "px";
+
+
+    ctx.setTransform(
+        canvasDpr,
+        0,
+        0,
+        canvasDpr,
+        0,
+        0
+    );
+
+
+    ctx.imageSmoothingEnabled =
+        false;
+}
+
+
+resizeCanvas();
+
+
+/* =========================================================
+   PARTICLE CLASS
+========================================================= */
+
+class Particle {
+
+    constructor(
+        targetX,
+        targetY,
+        r,
+        g,
+        b
+    ) {
+
+        this.targetX =
+            targetX;
+
+        this.targetY =
+            targetY;
+
+
+        const angle =
+            Math.random() *
+            Math.PI *
+            2;
+
+
+        const distance =
+            350 +
+            Math.random() *
+            1000;
+
+
+        this.startX =
+            window.innerWidth / 2 +
+            Math.cos(angle) *
+            distance;
+
+
+        this.startY =
+            window.innerHeight / 2 +
+            Math.sin(angle) *
+            distance;
+
+
+        this.x =
+            this.startX;
+
+
+        this.y =
+            this.startY;
+
+
+        this.color =
+            `rgb(${r},${g},${b})`;
+
+
+        this.size =
+            1.2 +
+            Math.random() *
+            0.8;
+
+
+        this.delay =
+            Math.random() *
+            MAX_DELAY;
+
+
+        this.phase =
+            Math.random() *
+            Math.PI *
+            2;
+
+
+        this.orbit =
+            10 +
+            Math.random() *
+            35;
+
+
+        this.direction =
+            Math.random() > 0.5
+                ? 1
+                : -1;
     }
-    const starField = createStars();
-    scene.add(starField);
 
-    // Background 2: Nature Water/Tree Waves (For Earth Mode)
-    const natureGeo = new THREE.PlaneGeometry(200, 200, 32, 32);
-    const natureMat = new THREE.ShaderMaterial({
-        uniforms: { uTime: { value: 0 }, uOpacity: { value: 0.0 } },
-        vertexShader: `
-            varying vec2 vUv;
-            void main() {
-                vUv = uv;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+
+    update(elapsed) {
+
+        let progress =
+            (
+                elapsed -
+                this.delay
+            ) /
+            FORMATION_TIME;
+
+
+        if (progress <= 0) {
+            return;
+        }
+
+
+        if (progress > 1) {
+            progress = 1;
+        }
+
+
+        const ease =
+            1 -
+            Math.pow(
+                1 - progress,
+                4
+            );
+
+
+        let x =
+            this.startX +
+            (
+                this.targetX -
+                this.startX
+            ) *
+            ease;
+
+
+        let y =
+            this.startY +
+            (
+                this.targetY -
+                this.startY
+            ) *
+            ease;
+
+
+        const swirl =
+            (1 - ease) *
+            this.orbit;
+
+
+        x +=
+            Math.cos(
+                elapsed *
+                2.1 *
+                this.direction +
+                this.phase
+            ) *
+            swirl;
+
+
+        y +=
+            Math.sin(
+                elapsed *
+                2.0 *
+                this.direction +
+                this.phase
+            ) *
+            swirl;
+
+
+        this.x = x;
+
+        this.y = y;
+    }
+
+
+    draw() {
+
+        ctx.fillStyle =
+            this.color;
+
+
+        ctx.fillRect(
+            this.x,
+            this.y,
+            this.size,
+            this.size
+        );
+    }
+}
+
+
+/* =========================================================
+   CREATE PARTICLES
+========================================================= */
+
+function createParticles() {
+
+    particles = [];
+
+
+    const tempCanvas =
+        document.createElement(
+            "canvas"
+        );
+
+
+    const tempCtx =
+        tempCanvas.getContext(
+            "2d",
+            {
+                willReadFrequently: true
             }
-        `,
-        fragmentShader: `
-            uniform float uTime; uniform float uOpacity;
-            varying vec2 vUv;
-            
-            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-            vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-            vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
-            float snoise(vec2 v) {
-                const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
-                vec2 i  = floor(v + dot(v, C.yy)); vec2 x0 = v - i + dot(i, C.xx);
-                vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-                vec4 x12 = x0.xyxy + C.xxzz; x12.xy -= i1;
-                i = mod289(i);
-                vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
-                vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
-                m = m*m; m = m*m;
-                vec3 x = 2.0 * fract(p * C.www) - 1.0;
-                vec3 h = abs(x) - 0.5; vec3 ox = floor(x + 0.5);
-                vec3 a0 = x - ox; m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
-                vec3 g; g.x = a0.x * x0.x + h.x * x0.y; g.yz = a0.yz * x12.xz + h.yz * x12.yw;
-                return 130.0 * dot(m, g);
+        );
+
+
+    const maxWidth =
+        window.innerWidth *
+        0.84;
+
+
+    const maxHeight =
+        window.innerHeight *
+        0.90;
+
+
+    const scale =
+        Math.min(
+            maxWidth / image.width,
+            maxHeight / image.height
+        );
+
+
+    const displayWidth =
+        Math.floor(
+            image.width *
+            scale
+        );
+
+
+    const displayHeight =
+        Math.floor(
+            image.height *
+            scale
+        );
+
+
+    const offsetX =
+        (
+            window.innerWidth -
+            displayWidth
+        ) / 2;
+
+
+    const offsetY =
+        (
+            window.innerHeight -
+            displayHeight
+        ) / 2;
+
+
+    let gap =
+        BASE_DOT_GAP;
+
+
+    while (
+        Math.floor(
+            displayWidth / gap
+        ) *
+        Math.floor(
+            displayHeight / gap
+        )
+        >
+        MAX_PARTICLES
+    ) {
+
+        gap++;
+    }
+
+
+    const smallWidth =
+        Math.floor(
+            displayWidth / gap
+        );
+
+
+    const smallHeight =
+        Math.floor(
+            displayHeight / gap
+        );
+
+
+    tempCanvas.width =
+        smallWidth;
+
+
+    tempCanvas.height =
+        smallHeight;
+
+
+    tempCtx.drawImage(
+        image,
+        0,
+        0,
+        smallWidth,
+        smallHeight
+    );
+
+
+    const pixels =
+        tempCtx.getImageData(
+            0,
+            0,
+            smallWidth,
+            smallHeight
+        ).data;
+
+
+    for (
+        let y = 0;
+        y < smallHeight;
+        y++
+    ) {
+
+        for (
+            let x = 0;
+            x < smallWidth;
+            x++
+        ) {
+
+            const index =
+                (
+                    y *
+                    smallWidth +
+                    x
+                ) * 4;
+
+
+            const r =
+                pixels[index];
+
+
+            const g =
+                pixels[index + 1];
+
+
+            const b =
+                pixels[index + 2];
+
+
+            const a =
+                pixels[index + 3];
+
+
+            if (a < 80) {
+                continue;
             }
-            float fbm(vec2 p) {
-                float f = 0.0; float w = 0.5;
-                for (int i = 0; i < 5; i++) {
-                    f += w * snoise(p); p *= 2.0; w *= 0.5;
-                }
-                return f;
+
+
+            if (
+                r < 5 &&
+                g < 5 &&
+                b < 5
+            ) {
+                continue;
             }
 
-            void main() {
-                vec2 uv = vUv * 3.0;
-                float noise = fbm(uv + uTime * 0.1);
-                float noise2 = fbm(uv * 2.0 - uTime * 0.15);
-                
-                vec3 darkGreen = vec3(0.02, 0.2, 0.1);
-                vec3 waterBlue = vec3(0.0, 0.4, 0.5);
-                vec3 brightGreen = vec3(0.2, 0.6, 0.2);
-                
-                vec3 color = mix(darkGreen, waterBlue, noise + 0.5);
-                color = mix(color, brightGreen, noise2);
-                
-                gl_FragColor = vec4(color, uOpacity);
-            }
-        `,
-        transparent: true, depthWrite: false
-    });
-    const natureBackground = new THREE.Mesh(natureGeo, natureMat);
-    natureBackground.position.z = -50; 
-    scene.add(natureBackground);
 
-    // =========================================================
-    // 3. PLANETS (MOON & EARTH ONLY)
-    // =========================================================
-    const baseSphereGeo = new THREE.SphereGeometry(6, 64, 64);
-    
-    // --- MOON ---
-    const moonGroup = new THREE.Group(); 
-    const moonMat = new THREE.MeshStandardMaterial({
-        map: textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/moon_1024.jpg'),
-        transparent: true, opacity: 1.0, depthWrite: true
-    });
-    moonGroup.add(new THREE.Mesh(baseSphereGeo, moonMat));
-    globeContainer.add(moonGroup);
+            const targetX =
+                offsetX +
+                x * gap +
+                gap / 2;
 
-    // --- EARTH ---
-    const earthGroup = new THREE.Group(); 
-    earthGroup.visible = false;
-    const earthMat = new THREE.MeshPhongMaterial({
-        map: textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg'),
-        transparent: true, opacity: 0.0, depthWrite: true
-    });
-    earthGroup.add(new THREE.Mesh(baseSphereGeo, earthMat));
-    globeContainer.add(earthGroup);
 
-    // Planet Glow Aura
-    const glowMat = new THREE.ShaderMaterial({
-        uniforms: { uOpacity: { value: 1.0 }, uColor: { value: new THREE.Color(0xaaccff) } },
-        vertexShader: `
-            varying vec3 vNormal; varying vec3 vViewVec;
-            void main() {
-                vNormal = normalize(normalMatrix * normal);
-                vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
-                vViewVec = -normalize(mvPos.xyz);
-                gl_Position = projectionMatrix * mvPos;
-            }
-        `,
-        fragmentShader: `
-            uniform float uOpacity; uniform vec3 uColor;
-            varying vec3 vNormal; varying vec3 vViewVec;
-            void main() {
-                float intensity = pow(0.6 - dot(vNormal, vViewVec), 2.5);
-                gl_FragColor = vec4(uColor, intensity * uOpacity * 1.5);
-            }
-        `,
-        blending: THREE.AdditiveBlending, transparent: true, depthWrite: false
-    });
-    const planetGlow = new THREE.Mesh(new THREE.SphereGeometry(6.6, 64, 64), glowMat);
-    globeContainer.add(planetGlow);
+            const targetY =
+                offsetY +
+                y * gap +
+                gap / 2;
 
-    // =========================================================
-    // 4. INTERACTION LOGIC
-    // =========================================================
-    const clock = new THREE.Clock();
-    let targetRotX = 0, targetRotY = 0, currentRotX = 0, currentRotY = 0;
-    let targetScale = 1.0, currentScale = 1.0;
-    
-    // Mode: 0 = Moon, 1 = Earth
-    let targetMode = 0; 
-    let modeWeights = { moon: 1.0, earth: 0.0 };
-    let lastModeChangeTime = 0;
-    
-    // Left hand grayscale value (1.0 is pure white/normal, lower is dark/gray)
-    let customBrightness = 1.0; 
-    
-    const uiText = document.getElementById('ui-overlay');
-    const modeText = document.getElementById('mode-text');
 
-    function onHandResults(results) {
-        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-            uiText.innerHTML = "Right Hand: Rotate<br>Left Hand (Up/Down): Brightness (White/Gray/Black)<br>Left Hand (Swipe Left Edge): Change Planet<br>Both Hands: Zoom";
-            
-            let leftHand = null, rightHand = null;
-            if (results.multiHandLandmarks.length === 1) {
-                if (results.multiHandLandmarks[0][0].x < 0.5) leftHand = results.multiHandLandmarks[0];
-                else rightHand = results.multiHandLandmarks[0];
-            } else {
-                const h1 = results.multiHandLandmarks[0], h2 = results.multiHandLandmarks[1];
-                if (h1[0].x < h2[0].x) { leftHand = h1; rightHand = h2; }
-                else { leftHand = h2; rightHand = h1; }
-            }
+            particles.push(
+                new Particle(
+                    targetX,
+                    targetY,
+                    r,
+                    g,
+                    b
+                )
+            );
+        }
+    }
 
-            if (rightHand) {
-                targetRotY = (rightHand[0].x - 0.5) * Math.PI * 3;
-                targetRotX = (rightHand[0].y - 0.5) * Math.PI * 2;
-            }
 
-            if (leftHand) {
-                // Swipe Left to change Planet (Toggles between 0 and 1)
-                if (leftHand[0].x < 0.2) {
-                    if (Date.now() - lastModeChangeTime > 1500) { 
-                        targetMode = (targetMode === 0) ? 1 : 0; // Toggle 0 and 1
-                        modeText.innerText = ["MOON", "EARTH"][targetMode];
-                        modeText.style.opacity = 1;
-                        modeText.style.transform = "translate(-50%, -50%) scale(1.2)";
-                        setTimeout(() => { modeText.style.opacity = 0; modeText.style.transform = "translate(-50%, -50%) scale(1.0)"; }, 1200);
-                        lastModeChangeTime = Date.now();
+    console.log(
+        "Particles:",
+        particles.length
+    );
+}
+
+
+/* =========================================================
+   DRAW PARTICLES
+========================================================= */
+
+function drawParticles(elapsed) {
+
+    ctx.fillStyle =
+        "#000";
+
+
+    ctx.fillRect(
+        0,
+        0,
+        window.innerWidth,
+        window.innerHeight
+    );
+
+
+    for (
+        let i = 0;
+        i < particles.length;
+        i++
+    ) {
+
+        particles[i].update(
+            elapsed
+        );
+
+
+        particles[i].draw();
+    }
+}
+
+
+/* =========================================================
+   SHOW ORIGINAL IMAGE
+========================================================= */
+
+function showOriginalImage() {
+
+    if (finalImageShown) {
+        return;
+    }
+
+
+    finalImageShown = true;
+
+
+    finalImage.classList.add(
+        "show"
+    );
+
+
+    setTimeout(
+        () => {
+
+            canvas.style.display =
+                "none";
+
+            particles = [];
+
+        },
+        2600
+    );
+}
+
+
+/* =========================================================
+   MAIN PARTICLE ANIMATION
+========================================================= */
+
+function animate(timestamp) {
+
+    if (!animationStarted) {
+        return;
+    }
+
+
+    const elapsed =
+        (
+            timestamp -
+            animationStartTime
+        ) / 1000;
+
+
+    drawParticles(
+        elapsed
+    );
+
+
+    if (
+        elapsed >=
+        FORMATION_TIME +
+        MAX_DELAY
+    ) {
+
+        showOriginalImage();
+
+        return;
+    }
+
+
+    requestAnimationFrame(
+        animate
+    );
+}
+
+
+/* =========================================================
+   START BUTTON
+========================================================= */
+
+startButton.addEventListener(
+    "click",
+    () => {
+
+        /* =========================================
+           START MUSIC
+        ========================================= */
+
+        bgMusic.currentTime = 0;
+
+        bgMusic.volume = 0.7;
+
+
+        bgMusic.play()
+            .then(() => {
+
+                console.log(
+                    "Venkateswara music started."
+                );
+
+            })
+            .catch((error) => {
+
+                console.log(
+                    "Music playback error:",
+                    error
+                );
+
+            });
+
+
+        /* =========================================
+           CHECK IMAGE
+        ========================================= */
+
+        if (!imageReady) {
+
+            alert(
+                "Please wait for the image to load."
+            );
+
+            return;
+        }
+
+
+        if (animationStarted) {
+            return;
+        }
+
+
+        startButton.style.display =
+            "none";
+
+
+        loading.style.display =
+            "block";
+
+
+        setTimeout(
+            () => {
+
+                createParticles();
+
+
+                requestAnimationFrame(
+                    () => {
+
+                        loading.style.display =
+                            "none";
+
+
+                        animationStarted =
+                            true;
+
+
+                        animationStartTime =
+                            performance.now();
+
+
+                        requestAnimationFrame(
+                            animate
+                        );
+
                     }
-                }
-                
-                customBrightness = 1.0 - (leftHand[0].y * 0.85); 
-            } else {
-                customBrightness += (1.0 - customBrightness) * 0.1;
-            }
+                );
 
-            if (leftHand && rightHand) {
-                const dist = Math.hypot(leftHand[0].x - rightHand[0].x, leftHand[0].y - rightHand[0].y);
-                targetScale = Math.max(0.5, Math.min(dist * 3.0, 2.5));
-            }
-        } else {
-            uiText.innerText = "Show hands to interact.";
-            targetScale = 1.0; 
+            },
+            100
+        );
+
+    }
+);
+
+
+/* =========================================================
+   DIVINE FLOWER GARLAND SYSTEM
+========================================================= */
+
+const garlandCanvas =
+    document.getElementById(
+        "garlandCanvas"
+    );
+
+
+const garlandCtx =
+    garlandCanvas.getContext(
+        "2d"
+    );
+
+
+let garlandDpr = 1;
+
+
+/* =========================================================
+   GARLAND RESIZE
+========================================================= */
+
+function resizeGarlandCanvas() {
+
+    garlandDpr =
+        Math.min(
+            window.devicePixelRatio || 1,
+            1.5
+        );
+
+
+    garlandCanvas.width =
+        Math.floor(
+            window.innerWidth *
+            garlandDpr
+        );
+
+
+    garlandCanvas.height =
+        Math.floor(
+            window.innerHeight *
+            garlandDpr
+        );
+
+
+    garlandCanvas.style.width =
+        window.innerWidth + "px";
+
+
+    garlandCanvas.style.height =
+        window.innerHeight + "px";
+
+
+    garlandCtx.setTransform(
+        garlandDpr,
+        0,
+        0,
+        garlandDpr,
+        0,
+        0
+    );
+}
+
+
+resizeGarlandCanvas();
+
+
+window.addEventListener(
+    "resize",
+    resizeGarlandCanvas
+);
+
+
+/* =========================================================
+   FLOWER
+========================================================= */
+
+function drawFlower(
+    x,
+    y,
+    size,
+    rotation,
+    type = 0
+) {
+
+    garlandCtx.save();
+
+
+    garlandCtx.translate(
+        x,
+        y
+    );
+
+
+    garlandCtx.rotate(
+        rotation
+    );
+
+
+    garlandCtx.shadowBlur =
+        size * 0.6;
+
+
+    garlandCtx.shadowColor =
+        "rgba(255,170,80,0.45)";
+
+
+    const petalCount =
+        type === 1
+            ? 10
+            : 8;
+
+
+    for (
+        let i = 0;
+        i < petalCount;
+        i++
+    ) {
+
+        garlandCtx.save();
+
+
+        garlandCtx.rotate(
+            i *
+            Math.PI *
+            2 /
+            petalCount
+        );
+
+
+        garlandCtx.beginPath();
+
+
+        garlandCtx.ellipse(
+            0,
+            -size * 0.52,
+            size * 0.38,
+            size * 0.68,
+            0,
+            0,
+            Math.PI * 2
+        );
+
+
+        if (type === 0) {
+
+            garlandCtx.fillStyle =
+                "#ff9fba";
+
         }
+        else if (type === 1) {
+
+            garlandCtx.fillStyle =
+                "#ffd35a";
+
+        }
+        else {
+
+            garlandCtx.fillStyle =
+                "#fff0a6";
+        }
+
+
+        garlandCtx.fill();
+
+
+        garlandCtx.restore();
     }
 
-    // =========================================================
-    // 5. FIXED CAMERA PERMISSIONS (FOR LAPTOP & MOBILE)
-    // =========================================================
-    const videoElement = document.getElementById('video-feed');
-    const startBtn = document.getElementById('start-btn');
-    const loader = document.getElementById('loader');
-    const startScreen = document.getElementById('start-screen');
-    const errorMsg = document.getElementById('error-msg');
 
-    startBtn.addEventListener('click', async () => {
-        startBtn.style.display = 'none';
-        loader.style.display = 'block';
-        errorMsg.style.display = 'none';
+    garlandCtx.shadowBlur =
+        size * 0.4;
 
-        let stream = null;
 
-        try {
-            // ATTEMPT 1: General universal camera (Works best on 99% of laptops)
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { width: { ideal: 640 }, height: { ideal: 480 } },
-                    audio: false
-                });
-            } catch (err1) {
-                // ATTEMPT 2: Fallback to explicitly request front camera (Works best on Mobile)
-                console.warn("Default camera failed. Trying Mobile Front Camera...");
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
-                    audio: false
-                });
-            }
+    garlandCtx.shadowColor =
+        "rgba(255,220,70,0.8)";
 
-            // Apply stream to video element
-            videoElement.srcObject = stream;
-            
-            // Start MediaPipe AI
-            const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-            hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
-            hands.onResults(onHandResults);
 
-            videoElement.onloadeddata = () => {
-                startScreen.style.display = 'none'; 
-                const sendFrames = async () => {
-                    if (!videoElement.paused && !videoElement.ended) await hands.send({ image: videoElement });
-                    requestAnimationFrame(sendFrames);
-                };
-                sendFrames();
-            };
-        } catch (err) {
-            console.error("Camera access failed completely:", err);
-            loader.style.display = 'none';
-            errorMsg.style.display = 'block';
-            
-            // Explicit error check for the laptop "file://" block issue
-            if (window.location.protocol === 'file:') {
-                errorMsg.innerHTML = "❌ BROWSER BLOCKED LAPTOP CAMERA ❌<br><br>Google Chrome/Edge strictly block laptop webcams if you just double-click the HTML file from a folder.<br><br><b>How to fix:</b> Go to <b>CodePen.io</b> on your laptop, paste this code into the HTML box, and it will ask for permission instantly.";
-            } else {
-                errorMsg.innerHTML = "❌ CAMERA PERMISSION DENIED ❌<br><br>Please click the lock icon (🔒) in your browser's address bar, allow the Camera, and refresh the page.";
-            }
-            
-            startBtn.style.display = 'block';
-            startBtn.innerText = "Try Again";
-        }
-    });
+    garlandCtx.beginPath();
 
-    // =========================================================
-    // 6. RENDER LOOP
-    // =========================================================
-    function animate() {
-        requestAnimationFrame(animate);
-        const time = clock.getElapsedTime();
 
-        currentRotX += (targetRotX - currentRotX) * 0.1;
-        currentRotY += (targetRotY - currentRotY) * 0.1;
-        currentScale += (targetScale - currentScale) * 0.1;
-        
-        globeContainer.rotation.x = currentRotX;
-        globeContainer.rotation.y = currentRotY + (time * 0.05); 
-        globeContainer.scale.set(currentScale, currentScale, currentScale);
+    garlandCtx.arc(
+        0,
+        0,
+        size * 0.27,
+        0,
+        Math.PI * 2
+    );
 
-        // Update Backgrounds
-        starField.rotation.y = time * 0.01;
-        starField.material.uniforms.uTime.value = time;
-        natureMat.uniforms.uTime.value = time;
 
-        // Smooth Mode Transition
-        modeWeights.moon += ((targetMode === 0 ? 1 : 0) - modeWeights.moon) * 0.05;
-        modeWeights.earth += ((targetMode === 1 ? 1 : 0) - modeWeights.earth) * 0.05;
+    garlandCtx.fillStyle =
+        "#ffd83d";
 
-        // Apply Opacities to Planets
-        moonGroup.visible = modeWeights.moon > 0.01;
-        earthGroup.visible = modeWeights.earth > 0.01;
-        moonMat.opacity = modeWeights.moon;
-        earthMat.opacity = modeWeights.earth;
 
-        // Apply Opacities to Backgrounds
-        starField.material.uniforms.uOpacity.value = modeWeights.moon;
-        natureMat.uniforms.uOpacity.value = modeWeights.earth;
+    garlandCtx.fill();
 
-        // Apply Grayscale/Brightness (White/Gray/Black only)
-        const grayTint = new THREE.Color(customBrightness, customBrightness, customBrightness);
-        moonMat.color.copy(grayTint);
-        earthMat.color.copy(grayTint);
 
-        // Adjust Glow Color
-        if (targetMode === 0) glowMat.uniforms.uColor.value.copy(new THREE.Color(0xaaccff).multiply(grayTint)); // Moon Glow
-        if (targetMode === 1) glowMat.uniforms.uColor.value.copy(new THREE.Color(0x4488ff).multiply(grayTint)); // Earth Glow
+    garlandCtx.beginPath();
 
-        renderer.render(scene, camera);
+
+    garlandCtx.arc(
+        0,
+        0,
+        size * 0.10,
+        0,
+        Math.PI * 2
+    );
+
+
+    garlandCtx.fillStyle =
+        "#b86b00";
+
+
+    garlandCtx.fill();
+
+
+    garlandCtx.restore();
+}
+
+
+/* =========================================================
+   LEAF
+========================================================= */
+
+function drawLeaf(
+    x,
+    y,
+    size,
+    rotation
+) {
+
+    garlandCtx.save();
+
+
+    garlandCtx.translate(
+        x,
+        y
+    );
+
+
+    garlandCtx.rotate(
+        rotation
+    );
+
+
+    garlandCtx.shadowBlur =
+        4;
+
+
+    garlandCtx.shadowColor =
+        "rgba(0,0,0,0.5)";
+
+
+    garlandCtx.beginPath();
+
+
+    garlandCtx.moveTo(
+        -size,
+        0
+    );
+
+
+    garlandCtx.quadraticCurveTo(
+        0,
+        -size * 0.65,
+        size,
+        0
+    );
+
+
+    garlandCtx.quadraticCurveTo(
+        0,
+        size * 0.65,
+        -size,
+        0
+    );
+
+
+    garlandCtx.closePath();
+
+
+    garlandCtx.fillStyle =
+        "#3f8f45";
+
+
+    garlandCtx.fill();
+
+
+    garlandCtx.beginPath();
+
+
+    garlandCtx.moveTo(
+        -size * 0.75,
+        0
+    );
+
+
+    garlandCtx.lineTo(
+        size * 0.75,
+        0
+    );
+
+
+    garlandCtx.strokeStyle =
+        "rgba(220,255,200,0.65)";
+
+
+    garlandCtx.lineWidth =
+        1;
+
+
+    garlandCtx.stroke();
+
+
+    garlandCtx.restore();
+}
+
+
+/* =========================================================
+   ROPE
+========================================================= */
+
+function drawRope(points) {
+
+    if (points.length < 2) {
+        return;
     }
-    
-    animate();
 
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+
+    garlandCtx.beginPath();
+
+
+    garlandCtx.moveTo(
+        points[0].x,
+        points[0].y
+    );
+
+
+    for (
+        let i = 1;
+        i < points.length;
+        i++
+    ) {
+
+        garlandCtx.lineTo(
+            points[i].x,
+            points[i].y
+        );
+    }
+
+
+    garlandCtx.strokeStyle =
+        "#7a4824";
+
+
+    garlandCtx.lineWidth =
+        5;
+
+
+    garlandCtx.lineCap =
+        "round";
+
+
+    garlandCtx.stroke();
+
+
+    garlandCtx.beginPath();
+
+
+    garlandCtx.moveTo(
+        points[0].x - 1,
+        points[0].y
+    );
+
+
+    for (
+        let i = 1;
+        i < points.length;
+        i++
+    ) {
+
+        garlandCtx.lineTo(
+            points[i].x - 1,
+            points[i].y
+        );
+    }
+
+
+    garlandCtx.strokeStyle =
+        "rgba(255,205,120,0.65)";
+
+
+    garlandCtx.lineWidth =
+        1.2;
+
+
+    garlandCtx.stroke();
+}
+
+
+/* =========================================================
+   LEFT GARLAND
+========================================================= */
+
+function drawLeftGarland(time) {
+
+    const points = [];
+
+    const segments = 17;
+
+    const length =
+        Math.min(
+            window.innerHeight * 0.64,
+            560
+        );
+
+
+    const startX =
+        Math.min(
+            62,
+            window.innerWidth * 0.10
+        );
+
+
+    for (
+        let i = 0;
+        i < segments;
+        i++
+    ) {
+
+        const p =
+            i /
+            (segments - 1);
+
+
+        const y =
+            p * length;
+
+
+        const swing =
+            Math.sin(
+                time * 1.25 +
+                p * 2.8
+            ) *
+            (
+                5 +
+                p * 15
+            );
+
+
+        const curve =
+            p *
+            p *
+            55;
+
+
+        const x =
+            startX +
+            curve +
+            swing;
+
+
+        points.push({
+            x: x,
+            y: y
+        });
+    }
+
+
+    drawRope(points);
+
+
+    for (
+        let i = 0;
+        i < points.length;
+        i++
+    ) {
+
+        const point =
+            points[i];
+
+
+        const localSwing =
+            Math.sin(
+                time * 1.25 +
+                i * 0.45
+            );
+
+
+        if (
+            i % 2 === 0
+        ) {
+
+            const size =
+                i === 0
+                    ? 30
+                    : 20 +
+                      Math.sin(i) * 3;
+
+
+            drawFlower(
+                point.x +
+                localSwing * 2,
+                point.y,
+                size,
+                localSwing * 0.08,
+                i % 4 === 0
+                    ? 1
+                    : 0
+            );
+        }
+
+
+        if (
+            i % 2 === 1
+        ) {
+
+            drawLeaf(
+                point.x - 15,
+                point.y + 2,
+                13,
+                -0.75 +
+                localSwing * 0.04
+            );
+
+
+            drawLeaf(
+                point.x + 14,
+                point.y + 7,
+                12,
+                0.65 +
+                localSwing * 0.04
+            );
+        }
+    }
+}
+
+
+/* =========================================================
+   RIGHT GARLAND
+========================================================= */
+
+function drawRightGarland(time) {
+
+    const points = [];
+
+    const segments = 17;
+
+
+    const length =
+        Math.min(
+            window.innerHeight * 0.64,
+            560
+        );
+
+
+    const startX =
+        window.innerWidth -
+        Math.min(
+            62,
+            window.innerWidth * 0.10
+        );
+
+
+    for (
+        let i = 0;
+        i < segments;
+        i++
+    ) {
+
+        const p =
+            i /
+            (segments - 1);
+
+
+        const y =
+            p * length;
+
+
+        const swing =
+            Math.sin(
+                time * 1.25 +
+                p * 2.8 +
+                Math.PI
+            ) *
+            (
+                5 +
+                p * 15
+            );
+
+
+        const curve =
+            p *
+            p *
+            55;
+
+
+        const x =
+            startX -
+            curve +
+            swing;
+
+
+        points.push({
+            x: x,
+            y: y
+        });
+    }
+
+
+    drawRope(points);
+
+
+    for (
+        let i = 0;
+        i < points.length;
+        i++
+    ) {
+
+        const point =
+            points[i];
+
+
+        const localSwing =
+            Math.sin(
+                time * 1.25 +
+                i * 0.45 +
+                Math.PI
+            );
+
+
+        if (
+            i % 2 === 0
+        ) {
+
+            const size =
+                i === 0
+                    ? 30
+                    : 20 +
+                      Math.sin(i) * 3;
+
+
+            drawFlower(
+                point.x +
+                localSwing * 2,
+                point.y,
+                size,
+                -localSwing * 0.08,
+                i % 4 === 0
+                    ? 1
+                    : 0
+            );
+        }
+
+
+        if (
+            i % 2 === 1
+        ) {
+
+            drawLeaf(
+                point.x + 15,
+                point.y + 2,
+                13,
+                0.75 +
+                localSwing * 0.04
+            );
+
+
+            drawLeaf(
+                point.x - 14,
+                point.y + 7,
+                12,
+                -0.65 +
+                localSwing * 0.04
+            );
+        }
+    }
+}
+
+
+/* =========================================================
+   TOP CORNER BIG FLOWERS
+========================================================= */
+
+function drawCornerFlowers(time) {
+
+    const leftSwing =
+        Math.sin(
+            time * 1.1
+        ) * 5;
+
+
+    drawFlower(
+        48 + leftSwing,
+        38,
+        35,
+        leftSwing * 0.02,
+        1
+    );
+
+
+    const rightSwing =
+        Math.sin(
+            time * 1.1 +
+            Math.PI
+        ) * 5;
+
+
+    drawFlower(
+        window.innerWidth -
+        48 +
+        rightSwing,
+        38,
+        35,
+        rightSwing * 0.02,
+        1
+    );
+}
+
+
+/* =========================================================
+   SMALL HANGING FLOWERS
+========================================================= */
+
+function drawSmallHangingFlowers(time) {
+
+    const leftX =
+        24 +
+        Math.sin(time) * 3;
+
+
+    for (
+        let i = 0;
+        i < 5;
+        i++
+    ) {
+
+        const y =
+            95 +
+            i * 48;
+
+
+        const swing =
+            Math.sin(
+                time * 1.5 +
+                i
+            ) * 5;
+
+
+        drawFlower(
+            leftX + swing,
+            y,
+            11,
+            swing * 0.03,
+            i % 2
+        );
+    }
+
+
+    const rightX =
+        window.innerWidth -
+        24 +
+        Math.sin(
+            time * 1.1 +
+            Math.PI
+        ) * 3;
+
+
+    for (
+        let i = 0;
+        i < 5;
+        i++
+    ) {
+
+        const y =
+            95 +
+            i * 48;
+
+
+        const swing =
+            Math.sin(
+                time * 1.5 +
+                i +
+                Math.PI
+            ) * 5;
+
+
+        drawFlower(
+            rightX + swing,
+            y,
+            11,
+            swing * 0.03,
+            i % 2
+        );
+    }
+}
+
+
+/* =========================================================
+   GARLAND ANIMATION
+========================================================= */
+
+function animateGarlands(timestamp) {
+
+    const time =
+        timestamp / 1000;
+
+
+    garlandCtx.clearRect(
+        0,
+        0,
+        window.innerWidth,
+        window.innerHeight
+    );
+
+
+    drawLeftGarland(
+        time
+    );
+
+
+    drawRightGarland(
+        time
+    );
+
+
+    drawCornerFlowers(
+        time
+    );
+
+
+    drawSmallHangingFlowers(
+        time
+    );
+
+
+    requestAnimationFrame(
+        animateGarlands
+    );
+}
+
+
+/* =========================================================
+   START GARLAND ANIMATION
+========================================================= */
+
+requestAnimationFrame(
+    animateGarlands
+);
+
+
+/* =========================================================
+   RESIZE
+========================================================= */
+
+let resizeTimer = null;
+
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        clearTimeout(
+            resizeTimer
+        );
+
+
+        resizeTimer =
+            setTimeout(
+                () => {
+
+                    resizeCanvas();
+
+                    resizeGarlandCanvas();
+
+
+                    if (
+                        imageReady &&
+                        !animationStarted
+                    ) {
+
+                        createParticles();
+                    }
+
+                },
+                200
+            );
+
+    }
+);
+
 </script>
+
 </body>
 </html>
+```
